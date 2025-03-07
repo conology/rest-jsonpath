@@ -1,0 +1,194 @@
+[
+  {
+    "name": "The Book Haven",
+    "specials": {
+      "fooFlag": "bar"
+    },
+    "created": { "$date": "2023-05-15T14:30:00Z" },
+    "owner": {
+      "firstName": "Alice",
+      "lastName": "Robertson",
+      "age": 45,
+      "contacts": [
+        { "type": "phone", "value": "+1-555-1234" },
+        { "type": "mail", "value": "alice@bookhaven.com" }
+      ]
+    },
+    "books": [
+      {
+        "title": "Echoes of Tomorrow",
+        "author": {
+          "firstName": "John",
+          "lastName": "Everwood",
+          "age": 50,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-5678" },
+            { "type": "mail", "value": "john.everwood@stories.com" }
+          ]
+        },
+        "published": { "$date": "2021-10-10T10:00:00Z" },
+        "genre": "Science Fiction"
+      },
+      {
+        "title": "The Forgotten Path",
+        "author": {
+          "firstName": "Samantha",
+          "lastName": "Lorne",
+          "age": 38,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-8765" },
+            { "type": "mail", "value": "samantha.lorne@fictionworld.com" }
+          ]
+        },
+        "published": { "$date": "2018-06-22T08:45:00Z" },
+        "genre": "Mystery"
+      }
+    ],
+    "customers": [
+      {
+        "firstName": "Daniel",
+        "lastName": "Smith",
+        "age": 30,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-3344" },
+          { "type": "mail", "value": "daniel.smith@example.com" }
+        ]
+      },
+      {
+        "firstName": "Lisa",
+        "lastName": "Thompson",
+        "age": 28,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-7788" },
+          { "type": "mail", "value": "lisa.thompson@example.com" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Timeless Tales",
+    "created": { "$date": "2019-11-30T09:00:00Z" },
+    "owner": {
+      "firstName": "Michael",
+      "lastName": "Stevenson",
+      "age": 52,
+      "contacts": [
+        { "type": "phone", "value": "+1-555-2222" },
+        { "type": "mail", "value": "michael@timelesstales.com" }
+      ]
+    },
+    "books": [
+      {
+        "title": "Legends of the Lost",
+        "author": {
+          "firstName": "Eleanor",
+          "lastName": "Finch",
+          "age": 45,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-9999" },
+            { "type": "mail", "value": "eleanor.finch@mythos.com" }
+          ]
+        },
+        "published": { "$date": "2020-03-15T13:15:00Z" },
+        "genre": "Fantasy"
+      },
+      {
+        "title": "The Silent Observer",
+        "author": {
+          "firstName": "Harold",
+          "lastName": "Grant",
+          "age": 60,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-6655" },
+            { "type": "mail", "value": "harold.grant@mysterywriters.com" }
+          ]
+        },
+        "published": { "$date": "2017-09-01T07:30:00Z" },
+        "genre": "Thriller"
+      }
+    ],
+    "customers": [
+      {
+        "firstName": "Emily",
+        "lastName": "White",
+        "age": 34,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-4455" },
+          { "type": "mail", "value": "emily.white@example.com" }
+        ]
+      },
+      {
+        "firstName": "Robert",
+        "lastName": "King",
+        "age": 40,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-9900" },
+          { "type": "mail", "value": "robert.king@example.com" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Page Turners",
+    "created": { "$date": "2021-07-20T16:45:00Z" },
+    "owner": {
+      "firstName": "Sophia",
+      "lastName": "Martinez",
+      "age": 39,
+      "contacts": [
+        { "type": "phone", "value": "+1-555-1111" },
+        { "type": "mail", "value": "sophia@pageturners.com" }
+      ]
+    },
+    "books": [
+      {
+        "title": "Beneath the Starlit Sky",
+        "author": {
+          "firstName": "David",
+          "lastName": "Holloway",
+          "age": 44,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-4321" },
+            { "type": "mail", "value": "david.holloway@starlit.com" }
+          ]
+        },
+        "published": { "$date": "2022-12-05T11:00:00Z" },
+        "genre": "Romance"
+      },
+      {
+        "title": "Fragments of Time",
+        "author": {
+          "firstName": "Margaret",
+          "lastName": "Neal",
+          "age": 55,
+          "contacts": [
+            { "type": "phone", "value": "+1-555-6666" },
+            { "type": "mail", "value": "margaret.neal@historybooks.com" }
+          ]
+        },
+        "published": { "$date": "2019-05-10T09:20:00Z" },
+        "genre": "Historical Fiction"
+      }
+    ],
+    "customers": [
+      {
+        "firstName": "James",
+        "lastName": "Anderson",
+        "age": 42,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-2233" },
+          { "type": "mail", "value": "james.anderson@example.com" }
+        ]
+      },
+      {
+        "firstName": "Olivia",
+        "lastName": "Carter",
+        "age": 29,
+        "contacts": [
+          { "type": "phone", "value": "+1-555-8899" },
+          { "type": "mail", "value": "olivia.carter@example.com" }
+        ]
+      }
+    ]
+  }
+]
