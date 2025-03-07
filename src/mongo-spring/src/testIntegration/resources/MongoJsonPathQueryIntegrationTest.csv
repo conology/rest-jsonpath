@@ -1,0 +1,3 @@
+Test Name,Match,Query
+byFieldExistence,The Book Haven,specials.fooFlag
+byNestedFieldValue,The Book Haven,"books[?@.title==""Echoes of Tomorrow""]"

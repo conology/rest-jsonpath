@@ -6,8 +6,9 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
@@ -47,6 +48,25 @@ class MongoJsonPathQueryIntegrationTest {
     private MongoCollection<Document> storeCollection;
 
 
+    @ParameterizedTest(name = "[{index}] {0}: {2}")
+    @CsvFileSource(resources = "/MongoJsonPathQueryIntegrationTest.csv", numLinesToSkip = 1)
+    void itQueries(String ignored, String matched, String query) {
+        var criteria = MongoCriteriaCompilerPass.parse(query);
+
+        var stores = mongoTemplate.find(
+            query(criteria),
+            Store.class,
+            COLLECTION_NAME
+        );
+
+        if (matched == null) {
+            assertThat(stores).isEmpty();
+        } else {
+            assertThat(stores).singleElement()
+                .hasFieldOrPropertyWithValue("name", matched);
+        }
+    }
+
     @BeforeAll
     void seedCollection() throws IOException {
         var stores = objectMapper.readValue(storesFile, new TypeReference<List<Document>>() {});
@@ -62,26 +82,12 @@ class MongoJsonPathQueryIntegrationTest {
         storeCollection.insertMany(stores);
     }
 
-    @Test
-    void itQueriesByFieldExistence() {
-        var criteria = MongoCriteriaCompilerPass.parse("specials.fooFlag");
-
-        var stores = mongoTemplate.find(
-            query(criteria),
-            Store.class,
-            COLLECTION_NAME
-        );
-        assertThat(stores).singleElement()
-            .hasFieldOrPropertyWithValue("name", "The Book Haven");
-    }
-
     @AfterAll
     void dropCollection() {
         storeCollection.drop();
     }
 
     public static class Store {
-        Instant created;
         String name;
     }
 

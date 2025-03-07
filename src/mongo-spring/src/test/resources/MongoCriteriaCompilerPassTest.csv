@@ -4,4 +4,3 @@ store.book,{"store.book": {"$exists": true}}
 store.book[?@.author=="Darwin"],"{""store.book"": {""$elemMatch"": {""author"": ""Darwin""}}}"
 store.book[?@.author=="Darwin"][?@.category=="fiction"].price,"{""store.book"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction"", ""price"": {""$exists"": true}}}}"
 "store.book[?@.author[?@.name==""Darwin""].age==""24""][?@.category==""fiction""].price","{ ""store.book"": { ""$elemMatch"": { ""author"": { ""$elemMatch"": { ""name"": ""Darwin"", ""age"": ""24"" } }, ""category"": ""fiction"", ""price"": { ""$exists"": true } } } }"
-,
