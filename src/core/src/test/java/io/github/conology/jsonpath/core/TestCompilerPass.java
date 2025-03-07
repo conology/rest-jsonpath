@@ -1,7 +1,7 @@
 package io.github.conology.jsonpath.core;
 
-import io.github.goatfryed.json_path_mongo.JsonPathMongoLexer;
-import io.github.goatfryed.json_path_mongo.JsonPathMongoParser;
+import io.github.conology.jsonpath.core.parser.JsonPathMongoLexer;
+import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 

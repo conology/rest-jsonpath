@@ -1,6 +1,6 @@
 package io.github.conology.jsonpath.core;
 
-import io.github.goatfryed.json_path_mongo.JsonPathMongoParser;
+import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 
 public class FilterQuery {
 

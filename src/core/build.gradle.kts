@@ -1,8 +1,9 @@
 plugins {
     id("java")
+    id("antlr")
 }
 
-group = "org.example"
+group = "io.github.conology"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -10,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation("org.springframework.data:spring-data-mongodb:4.4.2")
+    antlr("org.antlr:antlr4:4.13.2")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }

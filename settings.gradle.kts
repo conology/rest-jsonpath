@@ -1,5 +1,10 @@
-rootProject.name = "json-path-mongo"
+rootProject.name = "jsonpath"
 
-include("core")
-include("mongo-spring")
+include(
+    "core",
+    "mongo-spring"
+)
+
+project(":core").projectDir = file("src/core")
+project(":mongo-spring").projectDir = file("src/mongo-spring")
 

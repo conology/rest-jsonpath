@@ -1,7 +1,7 @@
 grammar JsonPathMongo;
 
 @header {
-package io.github.goatfryed.json_path_mongo;
+package io.github.conology.jsonpath.core.parser;
 }
 
 mongoQueries: mongoQuery (',' mongoQuery)*;

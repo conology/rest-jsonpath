@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SonarLintProjectSettings">
+    <option name="moduleMapping">
+      <map>
+        <entry key="core" value="json-path-mongo.core" />
+        <entry key="mongo-spring" value="json-path-mongo.mongo-spring" />
+      </map>
+    </option>
+  </component>
+</project>
