@@ -65,7 +65,8 @@ public class JsonPathCompilerPass {
     private PropertyQuery compile(JsonPathMongoParser.RelativeQueryContext ctx) {
         guardParserException(ctx);
 
-        throw failParserLexerMismatch();
+        var segments = PeekingIterator.of(ctx.segment().iterator());
+        return compilePropertyQuery(segments.next(), segments);
     }
 
     private void collectPropertyQuery(

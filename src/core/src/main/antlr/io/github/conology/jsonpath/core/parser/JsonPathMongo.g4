@@ -7,8 +7,12 @@ package io.github.conology.jsonpath.core.parser;
 restQuery: restBasicQuery EOF;
 restOrQuery: restAndQuery ( '||' restAndQuery)* ;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
-restBasicQuery: restExistenceQuery;
+restBasicQuery: restExistenceQuery | restComparisonQuery;
 restExistenceQuery: restShortRelativeQuery | relativeQuery;
+restComparisonQuery:
+    restShortRelativeQuery comparisonOperator literal
+    | literal comparisonOperator restShortRelativeQuery
+    ;
 restShortRelativeQuery: restMemberSelector segment*;
 restMemberSelector: SAFE_IDENTIFIER;
 
