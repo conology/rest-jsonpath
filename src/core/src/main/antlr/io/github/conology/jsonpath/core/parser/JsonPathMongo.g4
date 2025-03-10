@@ -18,8 +18,8 @@ segment:
 	;
 
 memberNameShortHand: '.' SAFE_IDENTIFIER;
-bracketedExpression: '[' filterExpression ']';
-filterExpression: '?' logicalExpression;
+bracketedExpression: '[' filterQuery ']';
+filterQuery: '?' logicalExpression;
 logicalExpression: comparisonExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:

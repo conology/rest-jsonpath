@@ -8,9 +8,9 @@ import java.util.Objects;
 
 public class MongoCriteriaCompilerPass {
 
-    private final PropertySelector ir;
+    private final PropertyQuery ir;
 
-    public MongoCriteriaCompilerPass(PropertySelector ir) {
+    public MongoCriteriaCompilerPass(PropertyQuery ir) {
         this.ir = ir;
     }
 
@@ -23,28 +23,28 @@ public class MongoCriteriaCompilerPass {
         return compilePropertySelector(ir);
     }
 
-    public Criteria compilePropertySelector(PropertySelector propertySelector) {
-        var path = normalizePath(propertySelector);
+    public Criteria compilePropertySelector(PropertyQuery propertyQuery) {
+        var path = normalizePath(propertyQuery);
         var criteria = new Criteria(path);
-        return compilePropertySelector(criteria, propertySelector);
+        return compilePropertySelector(criteria, propertyQuery);
     }
 
-    private Criteria compilePropertySelector(Criteria criteria, PropertySelector propertySelector) {
+    private Criteria compilePropertySelector(Criteria criteria, PropertyQuery propertyQuery) {
         if (
-            propertySelector.getFilters().isEmpty()
-            && propertySelector.getChildSelector() == null
+            propertyQuery.getFilters().isEmpty()
+            && propertyQuery.getChildSelector() == null
         ) {
             testExistsWithValue(criteria);
             return criteria;
         }
 
-        applyFilters(criteria, propertySelector);
-        applyChildSelector(criteria, propertySelector);
+        applyFilters(criteria, propertyQuery);
+        applyChildSelector(criteria, propertyQuery);
 
         return criteria;
     }
 
-    private void applyChildSelector(Criteria criteria, PropertySelector parentSelector) {
+    private void applyChildSelector(Criteria criteria, PropertyQuery parentSelector) {
         if (parentSelector.getChildSelector() == null) {
             return;
         }
@@ -53,9 +53,9 @@ public class MongoCriteriaCompilerPass {
         compilePropertySelector(childCriteria, childSelector);
     }
 
-    private void applyFilters(Criteria criteria, PropertySelector propertySelector) {
+    private void applyFilters(Criteria criteria, PropertyQuery propertyQuery) {
         var elemMatch = new Criteria();
-        for (var filter : propertySelector.getFilters()) {
+        for (var filter : propertyQuery.getFilters()) {
             switch (filter) {
                 case ComparingFilter comparison -> applyComparison(elemMatch, comparison);
             }
@@ -66,14 +66,14 @@ public class MongoCriteriaCompilerPass {
     private void applyComparison(Criteria criteria, ComparingFilter comparison) {
         if (
             comparison.getLeftNode() instanceof ValueNode valueNode
-                && comparison.getRightNode() instanceof PropertySelector propertySelector
+                && comparison.getRightNode() instanceof PropertyQuery propertyQuery
         ) {
-            applyComparison(criteria, propertySelector, valueNode, comparison.getOperator());
+            applyComparison(criteria, propertyQuery, valueNode, comparison.getOperator());
         } else if (
-            comparison.getLeftNode() instanceof PropertySelector propertySelector
+            comparison.getLeftNode() instanceof PropertyQuery propertyQuery
                 && comparison.getRightNode() instanceof ValueNode valueNode
         ) {
-            applyComparison(criteria, propertySelector, valueNode, comparison.getOperator());
+            applyComparison(criteria, propertyQuery, valueNode, comparison.getOperator());
         } else if (
             comparison.getLeftNode() instanceof ValueNode value1
                 && comparison.getRightNode() instanceof ValueNode value2
@@ -92,14 +92,14 @@ public class MongoCriteriaCompilerPass {
         }
     }
 
-    private void applyComparison(Criteria criteria, PropertySelector propertySelector, ValueNode valueNode, ComparisonOperator operator) {
-        if (!propertySelector.getFilters().isEmpty()) {
+    private void applyComparison(Criteria criteria, PropertyQuery propertyQuery, ValueNode valueNode, ComparisonOperator operator) {
+        if (!propertyQuery.getFilters().isEmpty()) {
             throw new UnsupportedOperationException("Filter queries in a relative query of comparison are not supported");
         }
-        if (propertySelector.getChildSelector() != null) {
+        if (propertyQuery.getChildSelector() != null) {
             throw new AssertionError("child selector not expected without filters");
         }
-        var path = normalizePath(propertySelector);
+        var path = normalizePath(propertyQuery);
         applyPropertyComparison(criteria, path, valueNode, operator);
     }
 
@@ -128,7 +128,7 @@ public class MongoCriteriaCompilerPass {
         }
     }
 
-    private static String normalizePath(PropertySelector propertySelector) {
-        return String.join(".", propertySelector.getPathParts());
+    private static String normalizePath(PropertyQuery propertyQuery) {
+        return String.join(".", propertyQuery.getPath());
     }
 }

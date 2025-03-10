@@ -6,23 +6,22 @@ import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import java.util.Iterator;
 import java.util.Objects;
 
 public class JsonPathCompilerPass {
 
-    public static PropertySelector parse(String input) {
+    public static PropertyQuery parse(String input) {
         var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
         var parser = new JsonPathMongoParser(new BufferedTokenStream(lexer));
 
         return new JsonPathCompilerPass().compile(parser.restQuery());
     }
 
-    private PropertySelector compile(JsonPathMongoParser.RestQueryContext restQueryContext) {
+    private PropertyQuery compile(JsonPathMongoParser.RestQueryContext restQueryContext) {
         return compile(restQueryContext.restBasicQuery());
     }
 
-    public PropertySelector compile(JsonPathMongoParser.RestBasicQueryContext ctx) {
+    public PropertyQuery compile(JsonPathMongoParser.RestBasicQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restExistenceQuery() != null) {
@@ -32,7 +31,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertySelector compile(JsonPathMongoParser.RestExistenceQueryContext ctx) {
+    private PropertyQuery compile(JsonPathMongoParser.RestExistenceQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restShortRelativeQuery() != null) {
@@ -46,56 +45,56 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertySelector compile(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
+    private PropertyQuery compile(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restMemberSelector() == null) {
             throw new AssertionError("Unexpected parser state. RestMemberSelector required");
         }
 
-        var propSelector = new PropertySelectorImpl();
+        var propSelector = new PropertyQueryImpl();
         propSelector.appendField(ctx.restMemberSelector().getText());
 
         if (!ctx.segment().isEmpty()) {
-            collectPropertySelector(propSelector, PeekingIterator.of(ctx.segment().iterator()));
+            collectPropertyQuery(propSelector, PeekingIterator.of(ctx.segment().iterator()));
         }
 
         return propSelector;
     }
 
-    private PropertySelector compile(JsonPathMongoParser.RelativeQueryContext ctx) {
+    private PropertyQuery compile(JsonPathMongoParser.RelativeQueryContext ctx) {
         guardParserException(ctx);
 
         throw failParserLexerMismatch();
     }
 
-    private void collectPropertySelector(
-        PropertySelectorImpl propertySelector,
+    private void collectPropertyQuery(
+        PropertyQueryImpl propertySelector,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
-        collectPropertySelectorPath(propertySelector, segments);
-        collectPropertySelectorFilter(propertySelector, segments);
+        collectPropertyQueryPath(propertySelector, segments);
+        collectPropertyQueryFilter(propertySelector, segments);
 
         if (segments.hasNext()) {
-            var childSelector = compilePropertySelector(segments.next(), segments);
+            var childSelector = compilePropertyQuery(segments.next(), segments);
             propertySelector.setChildSelector(childSelector);
         }
     }
 
-    private PropertySelector compilePropertySelector(
+    private PropertyQuery compilePropertyQuery(
         JsonPathMongoParser.SegmentContext startSegment,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
-        var propertySelector = new PropertySelectorImpl();
+        var propertySelector = new PropertyQueryImpl();
         propertySelector.appendField(startSegment.memberNameShortHand().SAFE_IDENTIFIER().getText());
 
-        collectPropertySelector(propertySelector, segments);
+        collectPropertyQuery(propertySelector, segments);
         return propertySelector;
     }
 
 
-    private static void collectPropertySelectorPath(
-        PropertySelectorImpl propertySelector,
+    private static void collectPropertyQueryPath(
+        PropertyQueryImpl propertySelector,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         while (segments.hasNext()) {
@@ -111,8 +110,8 @@ public class JsonPathCompilerPass {
         }
     }
 
-    private void collectPropertySelectorFilter(
-        PropertySelectorImpl propertySelector,
+    private void collectPropertyQueryFilter(
+        PropertyQueryImpl propertySelector,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         while (segments.hasNext()) {
@@ -120,16 +119,16 @@ public class JsonPathCompilerPass {
             if (segment.bracketedExpression() == null) break;
 
             var bracketedExpression = segment.bracketedExpression();
-            if (bracketedExpression.filterExpression() == null) break;
+            if (bracketedExpression.filterQuery() == null) break;
 
             segments.next();
-            var filterExpression = bracketedExpression.filterExpression();
+            var filterExpression = bracketedExpression.filterQuery();
             var filterNode = compile(filterExpression);
             propertySelector.addFilter(filterNode);
         }
     }
 
-    private FilterNode compile(JsonPathMongoParser.FilterExpressionContext filterCtx) {
+    private FilterNode compile(JsonPathMongoParser.FilterQueryContext filterCtx) {
         guardParserException(filterCtx);
 
         var logicalExpression = Objects.requireNonNull(filterCtx.logicalExpression());
@@ -166,9 +165,9 @@ public class JsonPathCompilerPass {
         ;
     }
 
-    private PropertySelector processExpression(JsonPathMongoParser.RelativeQueryContext relativeQuery) {
+    private PropertyQuery processExpression(JsonPathMongoParser.RelativeQueryContext relativeQuery) {
         var segments = PeekingIterator.of(relativeQuery.segment().iterator());
-        return compilePropertySelector(segments.next(), segments);
+        return compilePropertyQuery(segments.next(), segments);
     }
 
 

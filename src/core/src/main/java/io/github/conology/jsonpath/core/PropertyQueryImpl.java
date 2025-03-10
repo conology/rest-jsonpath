@@ -3,20 +3,15 @@ package io.github.conology.jsonpath.core;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class PropertySelectorImpl implements PropertySelector {
+public final class PropertyQueryImpl implements PropertyQuery {
 
-    private final List<String> pathParts = new ArrayList<>();
+    private final List<String> path = new ArrayList<>();
     private final List<FilterNode> filters = new ArrayList<>();
-    private PropertySelector childSelector;
+    private PropertyQuery childSelector;
 
     @Override
-    public String getPath() {
-        return String.join(".", pathParts);
-    }
-
-    @Override
-    public List<String> getPathParts() {
-        return pathParts;
+    public List<String> getPath() {
+        return path;
     }
 
     @Override
@@ -29,16 +24,16 @@ public final class PropertySelectorImpl implements PropertySelector {
     }
 
     public void appendField(String field) {
-        pathParts.add(field);
+        path.add(field);
     }
 
 
     @Override
-    public PropertySelector getChildSelector() {
+    public PropertyQuery getChildSelector() {
         return childSelector;
     }
 
-    public void setChildSelector(PropertySelector childSelector) {
+    public void setChildSelector(PropertyQuery childSelector) {
         this.childSelector = childSelector;
     }
 }
