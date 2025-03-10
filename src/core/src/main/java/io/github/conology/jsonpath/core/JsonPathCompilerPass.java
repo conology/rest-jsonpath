@@ -58,6 +58,7 @@ public class JsonPathCompilerPass {
         }
 
         var propSelector = new PropertyQueryImpl();
+        guardParserException(ctx.restMemberSelector());
         propSelector.appendField(ctx.restMemberSelector().getText());
 
         if (!ctx.segment().isEmpty()) {
