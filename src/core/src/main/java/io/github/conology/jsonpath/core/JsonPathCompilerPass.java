@@ -10,22 +10,27 @@ import java.util.Objects;
 
 public class JsonPathCompilerPass {
 
-    public static PropertyQuery parse(String input) {
+    public static QueryNode parse(String input) {
         var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
         var parser = new JsonPathMongoParser(new BufferedTokenStream(lexer));
 
         return new JsonPathCompilerPass().compile(parser.restQuery());
     }
 
-    private PropertyQuery compile(JsonPathMongoParser.RestQueryContext restQueryContext) {
+    private QueryNode compile(JsonPathMongoParser.RestQueryContext restQueryContext) {
+        guardParserException(restQueryContext);
         return compile(restQueryContext.restBasicQuery());
     }
 
-    public PropertyQuery compile(JsonPathMongoParser.RestBasicQueryContext ctx) {
+    public QueryNode compile(JsonPathMongoParser.RestBasicQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restExistenceQuery() != null) {
             return compile(ctx.restExistenceQuery());
+        }
+
+        if (ctx.restComparisonQuery() != null) {
+            return compile(ctx.restComparisonQuery());
         }
 
         throw failParserLexerMismatch();
@@ -82,6 +87,40 @@ public class JsonPathCompilerPass {
         }
     }
 
+    private QueryNode compile(JsonPathMongoParser.RestComparisonQueryContext ctx) {
+        guardParserException(ctx);
+
+        var leftNode = compile(ctx.restShortRelativeQuery());
+        return compileComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
+    }
+
+    private ComparingQuery compileComparison(JsonPathMongoParser.ComparisonExpressionContext comparison) {
+        guardParserException(comparison);
+
+        var leftNode = compile(comparison.relativeQuery());
+        return compileComparison(leftNode, comparison.literal(), comparison.comparisonOperator());
+    }
+
+    private ComparingQuery compileComparison(
+        PropertyQuery propertyQuery,
+        JsonPathMongoParser.LiteralContext literal,
+        JsonPathMongoParser.ComparisonOperatorContext operatorCtx
+    ) {
+        var rightNode = compile(literal);
+
+        var operator = switch (operatorCtx.getText()) {
+            case "==" -> ComparisonOperator.EQ;
+            case "!=" -> ComparisonOperator.NEQ;
+            case ">" -> ComparisonOperator.GT;
+            case ">=" -> ComparisonOperator.GTE;
+            case "<" -> ComparisonOperator.LT;
+            case "<=" -> ComparisonOperator.LTE;
+            default -> throw new AssertionError();
+        };
+
+        return new ComparingQuery(propertyQuery, rightNode, operator);
+    }
+
     private PropertyQuery compilePropertyQuery(
         JsonPathMongoParser.SegmentContext startSegment,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
@@ -129,31 +168,17 @@ public class JsonPathCompilerPass {
         }
     }
 
-    private FilterNode compile(JsonPathMongoParser.FilterQueryContext filterCtx) {
+    private QueryNode compile(JsonPathMongoParser.FilterQueryContext filterCtx) {
         guardParserException(filterCtx);
 
         var logicalExpression = Objects.requireNonNull(filterCtx.logicalExpression());
         guardParserException(logicalExpression);
+
         var comparison = Objects.requireNonNull(logicalExpression.comparisonExpression());
-        guardParserException(comparison);
-
-        var leftNode = processExpression(comparison.relativeQuery());
-        var rightNode = processExpression(comparison.literal());
-
-        var operator = switch (comparison.comparisonOperator().getText()) {
-            case "==" -> ComparisonOperator.EQ;
-            case "!=" -> ComparisonOperator.NEQ;
-            case ">" -> ComparisonOperator.GT;
-            case ">=" -> ComparisonOperator.GTE;
-            case "<" -> ComparisonOperator.LT;
-            case "<=" -> ComparisonOperator.LTE;
-            default -> throw new AssertionError();
-        };
-
-        return new ComparingFilter(leftNode, rightNode, operator);
+        return compileComparison(comparison);
     }
 
-    private ValueNode processExpression(JsonPathMongoParser.LiteralContext literal) {
+    private ValueNode compile(JsonPathMongoParser.LiteralContext literal) {
         if (literal.QUOTED_TEXT() != null) {
             return new ValueNode(processQuotedText(literal.QUOTED_TEXT().getText()));
         }
@@ -164,11 +189,6 @@ public class JsonPathCompilerPass {
         return terminalNode
             .substring(1, terminalNode.length() - 1) // strip the quotes
         ;
-    }
-
-    private PropertyQuery processExpression(JsonPathMongoParser.RelativeQueryContext relativeQuery) {
-        var segments = PeekingIterator.of(relativeQuery.segment().iterator());
-        return compilePropertyQuery(segments.next(), segments);
     }
 
 

@@ -3,14 +3,16 @@ package io.github.conology.jsonpath.mongo.spring;
 import io.github.conology.jsonpath.core.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MongoCriteriaCompilerPass {
 
-    private final PropertyQuery ir;
+    private final QueryNode ir;
 
-    public MongoCriteriaCompilerPass(PropertyQuery ir) {
+    public MongoCriteriaCompilerPass(QueryNode ir) {
         this.ir = ir;
     }
 
@@ -20,87 +22,107 @@ public class MongoCriteriaCompilerPass {
     }
 
     public Criteria compile() {
-        return compilePropertySelector(ir);
+        return compile(ir);
     }
 
-    public Criteria compilePropertySelector(PropertyQuery propertyQuery) {
+    private Criteria compile(QueryNode ir) {
+        return switch (ir) {
+            case ComparingQuery comparingQuery -> compileRootPropertyTest(comparingQuery);
+            case PropertyQuery propertyQuery -> compileRootPropertyTest(propertyQuery);
+        };
+    }
+
+    private Criteria compileRootPropertyTest(ComparingQuery comparingQuery) {
+        return compileComparisonTest(comparingQuery)
+            .map(this::compileRootPropertyTest)
+            .orElse(new Criteria());
+    }
+
+    private Criteria compileRootPropertyTest(MongoPropertyTest test) {
+        var path = normalizePath(test.propertyQuery());
+        var criteria = new Criteria(path);
+        return compilePropertyTest(criteria, test);
+    }
+
+    public Criteria compileRootPropertyTest(PropertyQuery propertyQuery) {
         var path = normalizePath(propertyQuery);
         var criteria = new Criteria(path);
-        return compilePropertySelector(criteria, propertyQuery);
+        var test = new MongoPropertyTest(propertyQuery, MongoCriteriaCompilerPass::testExistsWithValue);
+        return compilePropertyTest(criteria, test);
     }
 
-    private Criteria compilePropertySelector(Criteria criteria, PropertyQuery propertyQuery) {
-        if (
-            propertyQuery.getFilters().isEmpty()
-            && propertyQuery.getChildSelector() == null
-        ) {
-            testExistsWithValue(criteria);
-            return criteria;
+    private void applyChildPropertyTest(Criteria elemMatch, PropertyQuery propertyQuery) {
+        var test = new MongoPropertyTest(propertyQuery, MongoCriteriaCompilerPass::testExistsWithValue);
+        applyChildPropertyTest(elemMatch, test);
+    }
+
+    private void applyChildPropertyTest(Criteria criteria, MongoPropertyTest test) {
+        var path = normalizePath(test.propertyQuery());
+        compilePropertyTest(criteria.and(path), test);
+    }
+
+    private Criteria compilePropertyTest(Criteria criteria, MongoPropertyTest test) {
+        var propertyQuery = test.propertyQuery();
+
+        if (!propertyQuery.getFilters().isEmpty()) {
+            var elemMatch = compileElementMatch(propertyQuery.getFilters());
+            criteria.elemMatch(elemMatch);
+        } else if (propertyQuery.getChildSelector() == null) {
+            test.testStrategy().accept(criteria);
         }
 
-        applyFilters(criteria, propertyQuery);
-        applyChildSelector(criteria, propertyQuery);
+        if (propertyQuery.getChildSelector() != null) {
+            applyChildPropertyTest(criteria, test.propertyQuery(propertyQuery.getChildSelector()));
+        }
 
         return criteria;
     }
 
-    private void applyChildSelector(Criteria criteria, PropertyQuery parentSelector) {
-        if (parentSelector.getChildSelector() == null) {
-            return;
-        }
-        var childSelector = parentSelector.getChildSelector();
-        var childCriteria = criteria.and(normalizePath(childSelector));
-        compilePropertySelector(childCriteria, childSelector);
-    }
-
-    private void applyFilters(Criteria criteria, PropertyQuery propertyQuery) {
+    private Criteria compileElementMatch(List<QueryNode> queries) {
         var elemMatch = new Criteria();
-        for (var filter : propertyQuery.getFilters()) {
+        for (var filter : queries) {
             switch (filter) {
-                case ComparingFilter comparison -> applyComparison(elemMatch, comparison);
+                case ComparingQuery comparison -> compileComparisonTest(comparison)
+                    .ifPresent(test -> applyChildPropertyTest(elemMatch, test));
+                case PropertyQuery propertyQuery -> applyChildPropertyTest(elemMatch, propertyQuery);
             }
         }
-        criteria.elemMatch(elemMatch);
+        return elemMatch;
     }
 
-    private void applyComparison(Criteria criteria, ComparingFilter comparison) {
-        if (
-            comparison.getLeftNode() instanceof ValueNode valueNode
-                && comparison.getRightNode() instanceof PropertyQuery propertyQuery
-        ) {
-            applyComparison(criteria, propertyQuery, valueNode, comparison.getOperator());
-        } else if (
-            comparison.getLeftNode() instanceof PropertyQuery propertyQuery
-                && comparison.getRightNode() instanceof ValueNode valueNode
-        ) {
-            applyComparison(criteria, propertyQuery, valueNode, comparison.getOperator());
-        } else if (
-            comparison.getLeftNode() instanceof ValueNode value1
-                && comparison.getRightNode() instanceof ValueNode value2
-        ) {
-            if (!Objects.equals(value1.getText(), value2.getText())) {
-                throw new NoSuchElementException(
-                    "%s never equals %s. Therefore, this query can't yield results"
-                        .formatted(
-                            value1.getText(),
-                            value2.getText()
-                        )
-                );
+    private Optional<MongoPropertyTest> compileComparisonTest(ComparingQuery comparison) {
+        switch (comparison.getLeftNode()) {
+            case PropertyQuery propertyQuery when comparison.getRightNode() instanceof ValueNode valueNode -> {
+                return Optional.of(compileComparisonTest(propertyQuery, valueNode, comparison.getOperator()));
             }
-        } else {
-            throw new UnsupportedOperationException("One side of a comparison must be a literal");
+            case ValueNode valueNode when comparison.getRightNode() instanceof PropertyQuery propertyQuery -> {
+                return Optional.of(compileComparisonTest(propertyQuery, valueNode, comparison.getOperator()));
+            }
+            case ValueNode value1 when comparison.getRightNode() instanceof ValueNode value2 -> {
+                if (!Objects.equals(value1.getText(), value2.getText())) {
+                    throw new NoSuchElementException(
+                        "%s never equals %s. Therefore, this query can't yield results"
+                            .formatted(
+                                value1.getText(),
+                                value2.getText()
+                            )
+                    );
+                }
+                return Optional.empty();
+            }
+            case null, default -> throw new UnsupportedOperationException("One side of a comparison must be a literal");
         }
     }
 
-    private void applyComparison(Criteria criteria, PropertyQuery propertyQuery, ValueNode valueNode, ComparisonOperator operator) {
-        if (!propertyQuery.getFilters().isEmpty()) {
-            throw new UnsupportedOperationException("Filter queries in a relative query of comparison are not supported");
-        }
-        if (propertyQuery.getChildSelector() != null) {
-            throw new AssertionError("child selector not expected without filters");
-        }
-        var path = normalizePath(propertyQuery);
-        applyPropertyComparison(criteria, path, valueNode, operator);
+    private MongoPropertyTest compileComparisonTest(
+        PropertyQuery propertyQuery,
+        ValueNode valueNode,
+        ComparisonOperator operator
+    ) {
+        return new MongoPropertyTest(
+            propertyQuery,
+            criteria -> applyPropertyComparison(criteria, valueNode, operator)
+        );
     }
 
     private static void testExistsWithValue(Criteria criteria) {
@@ -111,20 +133,14 @@ public class MongoCriteriaCompilerPass {
         ;
     }
 
-    private void applyPropertyComparison(Criteria criteria, String path, ValueNode valueNode, ComparisonOperator operator) {
+    private void applyPropertyComparison(Criteria criteria, ValueNode valueNode, ComparisonOperator operator) {
         switch (operator) {
-            case EQ -> criteria.and(path)
-                .is(valueNode.getText());
-            case NEQ -> criteria.and(path)
-                .ne(valueNode.getText());
-            case GT -> criteria.and(path)
-                .gt(valueNode.getText());
-            case GTE -> criteria.and(path)
-                .gte(valueNode.getText());
-            case LT -> criteria.and(path)
-                .lt(valueNode.getText());
-            case LTE -> criteria.and(path)
-                .lte(valueNode.getText());
+            case EQ -> criteria.is(valueNode.getText());
+            case NEQ -> criteria.ne(valueNode.getText());
+            case GT -> criteria.gt(valueNode.getText());
+            case GTE -> criteria.gte(valueNode.getText());
+            case LT -> criteria.lt(valueNode.getText());
+            case LTE -> criteria.lte(valueNode.getText());
         }
     }
 
