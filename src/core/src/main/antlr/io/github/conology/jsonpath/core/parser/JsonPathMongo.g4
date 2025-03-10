@@ -4,40 +4,42 @@ grammar JsonPathMongo;
 package io.github.conology.jsonpath.core.parser;
 }
 
-mongoQueries: mongoQuery (',' mongoQuery)*;
-
-mongoQuery: startSegment segment*;
-
-startSegment:
-	memberNameShortHand
-	| '$.' memberNameShortHand
-	;
+restQuery: restBasicQuery EOF;
+restOrQuery: restAndQuery ( '||' restAndQuery)* ;
+restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
+restBasicQuery: restExistenceQuery;
+restExistenceQuery: restShortRelativeQuery | relativeQuery;
+restShortRelativeQuery: restMemberSelector segment*;
+restMemberSelector: SAFE_IDENTIFIER;
 
 segment:
-	'.' memberNameShortHand
-	| bracketedFilterSelector
+	memberNameShortHand
+	| bracketedExpression
 	;
 
-memberNameShortHand: SAFE_IDENTIFIER;
-bracketedFilterSelector: '[' '?' logicalExpression ']';
+memberNameShortHand: '.' SAFE_IDENTIFIER;
+bracketedExpression: '[' filterExpression ']';
+filterExpression: '?' logicalExpression;
 logicalExpression: comparisonExpression;
-comparisonExpression: relativeQuery comparisonOperator literal;
-literal: INT | quotedText;
-quotedText: '"' quotedTextInner '"';
-quotedTextInner: (SAFE_IDENTIFIER | SAFE_QUOTED_TEXT | ESCAPESEQUENCE | SPECIAL_CHAR )* ;
-comparisonOperator: '<' | '>' | '==' | '>=' | '<=' | '!=';
-relativeQuery: '@.' memberNameShortHand segment+;
+existenceExpression: relativeQuery;
+comparisonExpression:
+    relativeQuery comparisonOperator literal
+    | literal comparisonOperator relativeQuery
+    ;
+literal: INT | QUOTED_TEXT;
+comparisonOperator: COMPARISON_OPERATOR;
+relativeQuery: '@' segment+;
 
-fragment SAFECODEPOINT: ~[[?@."><=!\\\u0000-\u001F];
+fragment SAFECODEPOINT: ~[["\\\u0000-\u001F];
 
 fragment UNICODE: 'u' HEX HEX HEX HEX;
 
 fragment HEX: [0-9a-fA-F];
 
 
-SPECIAL_CHAR: [[?@."><=!];
+COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
 SAFE_IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
-SAFE_QUOTED_TEXT: SAFECODEPOINT+;
 ESCAPESEQUENCE: '\\' (["\\/bfnrt] | UNICODE);
+QUOTED_TEXT: '"' (ESCAPESEQUENCE | SAFECODEPOINT)* '"';
 INT         : '0' | [1-9][0-9]* ;
 WS  :   [ \t]+ -> skip ;

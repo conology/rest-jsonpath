@@ -52,6 +52,9 @@ class MongoJsonPathQueryIntegrationTest {
     @CsvFileSource(resources = "/MongoJsonPathQueryIntegrationTest.csv", numLinesToSkip = 1)
     void itQueries(String ignored, String matched, String query) {
         var criteria = MongoCriteriaCompilerPass.parse(query);
+        System.err.println(
+            query + " -> " + criteria.getCriteriaObject().toJson()
+        );
 
         var stores = mongoTemplate.find(
             query(criteria),

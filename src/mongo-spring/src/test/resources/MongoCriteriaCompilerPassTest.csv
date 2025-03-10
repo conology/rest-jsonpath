@@ -1,6 +1,9 @@
 input,expected
-store,{"store": {"$exists": true}}
-store.book,{"store.book": {"$exists": true}}
-store.book[?@.author=="Darwin"],"{""store.book"": {""$elemMatch"": {""author"": ""Darwin""}}}"
-store.book[?@.author=="Darwin"][?@.category=="fiction"].price,"{""store.book"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction"", ""price"": {""$exists"": true}}}}"
-"store.book[?@.author[?@.name==""Darwin""].age==""24""][?@.category==""fiction""].price","{ ""store.book"": { ""$elemMatch"": { ""author"": { ""$elemMatch"": { ""name"": ""Darwin"", ""age"": ""24"" } }, ""category"": ""fiction"", ""price"": { ""$exists"": true } } } }"
+store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
+store.book,"{""store.book"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
+"book[?@.author==""Charles Darwin""]","{""book"": {""$elemMatch"": {""author"": ""Charles Darwin""}}}"
+"book[?@.author==""Darwin""].price","{""book"": {""$elemMatch"": {""author"": ""Darwin""}}, ""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
+"book[?@.author==""Darwin""][?@.category==""fiction""]","{""book"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction""}}}"
+book[?@.author],"{""book"": {""author"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}"
+"store == ""The Book Haven""","{""store"": ""The Book Haven""}"
+"book[?@.author[?@.name==""Darwin""]]","{ ""book"": { ""$elemMatch"": { ""author"": { ""$elemMatch"": { ""name"": ""Darwin"" } } }"

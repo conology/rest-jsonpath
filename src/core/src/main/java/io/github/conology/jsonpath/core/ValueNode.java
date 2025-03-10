@@ -1,6 +1,6 @@
 package io.github.conology.jsonpath.core;
 
-public final class ValueNode implements ExpressionNode {
+public final class ValueNode implements ComparableNode {
     private final String text;
 
     public ValueNode(String text) {

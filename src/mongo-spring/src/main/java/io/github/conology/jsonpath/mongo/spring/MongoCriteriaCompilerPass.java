@@ -1,54 +1,134 @@
 package io.github.conology.jsonpath.mongo.spring;
 
-import io.github.conology.jsonpath.core.JsonPathCompilerPass;
-import io.github.conology.jsonpath.core.PropertyFilter;
-import io.github.conology.jsonpath.core.PropertySelector;
+import io.github.conology.jsonpath.core.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class MongoCriteriaCompilerPass {
 
-    public static Criteria parse(String input) {
-        var ir = JsonPathCompilerPass.parse(input);
-        return new MongoCriteriaCompilerPass().compile(ir);
+    private final PropertySelector ir;
+
+    public MongoCriteriaCompilerPass(PropertySelector ir) {
+        this.ir = ir;
     }
 
-    public Criteria compile(PropertySelector propertySelector) {
-        var criteria = new Criteria();
-        visit(criteria, propertySelector);
+    public static Criteria parse(String input) {
+        var ir = JsonPathCompilerPass.parse(input);
+        return new MongoCriteriaCompilerPass(ir).compile();
+    }
+
+    public Criteria compile() {
+        return compilePropertySelector(ir);
+    }
+
+    public Criteria compilePropertySelector(PropertySelector propertySelector) {
+        var path = normalizePath(propertySelector);
+        var criteria = new Criteria(path);
+        return compilePropertySelector(criteria, propertySelector);
+    }
+
+    private Criteria compilePropertySelector(Criteria criteria, PropertySelector propertySelector) {
+        if (
+            propertySelector.getFilters().isEmpty()
+            && propertySelector.getChildSelector() == null
+        ) {
+            testExistsWithValue(criteria);
+            return criteria;
+        }
+
+        applyFilters(criteria, propertySelector);
+        applyChildSelector(criteria, propertySelector);
+
         return criteria;
     }
 
-    private void visit(Criteria criteria, PropertySelector propertySelector) {
-        var propertyCriterion = criteria.and(propertySelector.getPath());
-        if (propertySelector.getCriteria().isEmpty()) {
-            propertyCriterion.exists(true);
+    private void applyChildSelector(Criteria criteria, PropertySelector parentSelector) {
+        if (parentSelector.getChildSelector() == null) {
             return;
         }
-
-        var elementMatch = new Criteria();
-        for (var criterion : propertySelector.getCriteria()) {
-            switch (criterion) {
-                case PropertySelector selector -> visit(elementMatch, selector);
-                case PropertyFilter filter -> visit(elementMatch, filter);
-            }
-        }
-        propertyCriterion.elemMatch(elementMatch);
+        var childSelector = parentSelector.getChildSelector();
+        var childCriteria = criteria.and(normalizePath(childSelector));
+        compilePropertySelector(childCriteria, childSelector);
     }
 
-    private void visit(Criteria criteria, PropertyFilter propertyFilter) {
-        switch (propertyFilter.getOperator()) {
-            case EQ -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .is(propertyFilter.getValueNode().getText());
-            case NEQ -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .ne(propertyFilter.getValueNode().getText());
-            case GT -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .gt(propertyFilter.getValueNode().getText());
-            case GTE -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .gte(propertyFilter.getValueNode().getText());
-            case LT -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .lt(propertyFilter.getValueNode().getText());
-            case LTE -> criteria.and(propertyFilter.getPropertyNode().getPath())
-                .lte(propertyFilter.getValueNode().getText());
+    private void applyFilters(Criteria criteria, PropertySelector propertySelector) {
+        var elemMatch = new Criteria();
+        for (var filter : propertySelector.getFilters()) {
+            switch (filter) {
+                case ComparingFilter comparison -> applyComparison(elemMatch, comparison);
+            }
         }
+        criteria.elemMatch(elemMatch);
+    }
+
+    private void applyComparison(Criteria criteria, ComparingFilter comparison) {
+        if (
+            comparison.getLeftNode() instanceof ValueNode valueNode
+                && comparison.getRightNode() instanceof PropertySelector propertySelector
+        ) {
+            applyComparison(criteria, propertySelector, valueNode, comparison.getOperator());
+        } else if (
+            comparison.getLeftNode() instanceof PropertySelector propertySelector
+                && comparison.getRightNode() instanceof ValueNode valueNode
+        ) {
+            applyComparison(criteria, propertySelector, valueNode, comparison.getOperator());
+        } else if (
+            comparison.getLeftNode() instanceof ValueNode value1
+                && comparison.getRightNode() instanceof ValueNode value2
+        ) {
+            if (!Objects.equals(value1.getText(), value2.getText())) {
+                throw new NoSuchElementException(
+                    "%s never equals %s. Therefore, this query can't yield results"
+                        .formatted(
+                            value1.getText(),
+                            value2.getText()
+                        )
+                );
+            }
+        } else {
+            throw new UnsupportedOperationException("One side of a comparison must be a literal");
+        }
+    }
+
+    private void applyComparison(Criteria criteria, PropertySelector propertySelector, ValueNode valueNode, ComparisonOperator operator) {
+        if (!propertySelector.getFilters().isEmpty()) {
+            throw new UnsupportedOperationException("Filter queries in a relative query of comparison are not supported");
+        }
+        if (propertySelector.getChildSelector() != null) {
+            throw new AssertionError("child selector not expected without filters");
+        }
+        var path = normalizePath(propertySelector);
+        applyPropertyComparison(criteria, path, valueNode, operator);
+    }
+
+    private static void testExistsWithValue(Criteria criteria) {
+        criteria
+            .exists(true)
+            .ne(null)
+            .not().size(0)
+        ;
+    }
+
+    private void applyPropertyComparison(Criteria criteria, String path, ValueNode valueNode, ComparisonOperator operator) {
+        switch (operator) {
+            case EQ -> criteria.and(path)
+                .is(valueNode.getText());
+            case NEQ -> criteria.and(path)
+                .ne(valueNode.getText());
+            case GT -> criteria.and(path)
+                .gt(valueNode.getText());
+            case GTE -> criteria.and(path)
+                .gte(valueNode.getText());
+            case LT -> criteria.and(path)
+                .lt(valueNode.getText());
+            case LTE -> criteria.and(path)
+                .lte(valueNode.getText());
+        }
+    }
+
+    private static String normalizePath(PropertySelector propertySelector) {
+        return String.join(".", propertySelector.getPathParts());
     }
 }

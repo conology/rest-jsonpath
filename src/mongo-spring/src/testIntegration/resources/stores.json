@@ -11,7 +11,8 @@
       "age": 45,
       "contacts": [
         { "type": "phone", "value": "+1-555-1234" },
-        { "type": "mail", "value": "alice@bookhaven.com" }
+        { "type": "mail", "value": "alice@bookhaven.com" },
+        { "type": "secondMail", "value": "tom@bookhaven.com" }
       ]
     },
     "books": [
@@ -74,7 +75,8 @@
       "age": 52,
       "contacts": [
         { "type": "phone", "value": "+1-555-2222" },
-        { "type": "mail", "value": "michael@timelesstales.com" }
+        { "type": "mail", "value": "michael@timelesstales.com" },
+        { "type": "secondMail", "value": "alice@bookhaven.com" }
       ]
     },
     "books": [

@@ -1,3 +1,4 @@
 Test Name,Match,Query
 byFieldExistence,The Book Haven,specials.fooFlag
 byNestedFieldValue,The Book Haven,"books[?@.title==""Echoes of Tomorrow""]"
+byMultiAttribute,Timeless Tales,"owner.contacts[?@.type==""secondMail"" && @.value==""alice@bookhaven.com""]"

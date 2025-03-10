@@ -16,11 +16,18 @@ class MongoCriteriaCompilerPassTest {
     }
 
     @Test
-//    @Disabled("for manual testing a query")
+    void manualTest2() {
+        test(
+            "store == \"The Book Haven\"",
+            "{\"owner.contacts\": {\"$elemMatch\": {\"type\": \"secondMail\", \"value\": \"alice@bookhaven.com\" }}}"
+        );
+    }
+
+    @Test
     void manualTest() {
         test(
-            "book[?@.title==\"Echoes of Tomorrow\"]",
-            "{\"book\": {\"$elemMatch\": {\"title\": \"Echoes of Tomorrow\"}}}"
+            "owner.contacts[?@.type==\"secondMail\" && @.value==\"alice@bookhaven.com\"]",
+            "{\"owner.contacts\": {\"$elemMatch\": {\"type\": \"secondMail\", \"value\": \"alice@bookhaven.com\" }}}"
         );
     }
 }

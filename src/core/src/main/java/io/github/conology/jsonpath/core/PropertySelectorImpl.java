@@ -5,24 +5,40 @@ import java.util.List;
 
 public final class PropertySelectorImpl implements PropertySelector {
 
-    private final List<String> path = new ArrayList<>();
-    private final List<CriteriaNode> criteria = new ArrayList<>();
+    private final List<String> pathParts = new ArrayList<>();
+    private final List<FilterNode> filters = new ArrayList<>();
+    private PropertySelector childSelector;
 
     @Override
     public String getPath() {
-        return String.join(".", path);
+        return String.join(".", pathParts);
     }
 
     @Override
-    public List<CriteriaNode> getCriteria() {
-        return criteria;
+    public List<String> getPathParts() {
+        return pathParts;
     }
 
-    public void addCriteria(CriteriaNode criteriaNode) {
-        criteria.add(criteriaNode);
+    @Override
+    public List<FilterNode> getFilters() {
+        return filters;
+    }
+
+    public void addFilter(FilterNode filterNode) {
+        filters.add(filterNode);
     }
 
     public void appendField(String field) {
-        path.add(field);
+        pathParts.add(field);
+    }
+
+
+    @Override
+    public PropertySelector getChildSelector() {
+        return childSelector;
+    }
+
+    public void setChildSelector(PropertySelector childSelector) {
+        this.childSelector = childSelector;
     }
 }
