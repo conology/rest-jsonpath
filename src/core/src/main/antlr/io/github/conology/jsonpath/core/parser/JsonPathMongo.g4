@@ -22,8 +22,8 @@ segment:
 	;
 
 memberNameShortHand: '.' SAFE_IDENTIFIER;
-bracketedExpression: '[' filterQuery ']';
-filterQuery: '?' logicalExpression;
+bracketedExpression: '[' filterSelector ']';
+filterSelector: '?' logicalExpression;
 logicalExpression: comparisonExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:

@@ -1,113 +1,180 @@
 package io.github.conology.jsonpath.core;
 
+import io.github.conology.jsonpath.core.ast.*;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoLexer;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import java.util.LinkedList;
 import java.util.Objects;
 
 public class JsonPathCompilerPass {
 
-    public static QueryNode parse(String input) {
+    public static PropertyFilterNode parseRestQuery(String input) {
         var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
         var parser = new JsonPathMongoParser(new BufferedTokenStream(lexer));
 
-        return new JsonPathCompilerPass().compile(parser.restQuery());
+        return new JsonPathCompilerPass().transform(parser.restQuery());
     }
 
-    private QueryNode compile(JsonPathMongoParser.RestQueryContext restQueryContext) {
+    private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
         guardParserException(restQueryContext);
-        return compile(restQueryContext.restBasicQuery());
+        return transform(restQueryContext.restBasicQuery());
     }
 
-    public QueryNode compile(JsonPathMongoParser.RestBasicQueryContext ctx) {
+    public PropertyFilterNode transform(JsonPathMongoParser.RestBasicQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restExistenceQuery() != null) {
-            return compile(ctx.restExistenceQuery());
+            return transform(ctx.restExistenceQuery());
         }
 
         if (ctx.restComparisonQuery() != null) {
-            return compile(ctx.restComparisonQuery());
+            return transform(ctx.restComparisonQuery());
         }
 
         throw failParserLexerMismatch();
     }
 
-    private PropertyQuery compile(JsonPathMongoParser.RestExistenceQueryContext ctx) {
+    private ExistenceFilterNode transform(JsonPathMongoParser.RestExistenceQueryContext ctx) {
+        var relativeQueryNode = transformRelativeQuery(ctx);
+        return new ExistenceFilterNode(relativeQueryNode);
+    }
+
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestExistenceQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restShortRelativeQuery() != null) {
-            return compile(ctx.restShortRelativeQuery());
+            return transform(ctx.restShortRelativeQuery());
         }
 
         if (ctx.relativeQuery() != null) {
-            return compile(ctx.relativeQuery());
+            return transform(ctx.relativeQuery());
         }
 
         throw failParserLexerMismatch();
     }
 
-    private PropertyQuery compile(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
+    private RelativeQueryNode transform(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restMemberSelector() == null) {
             throw new AssertionError("Unexpected parser state. RestMemberSelector required");
         }
 
-        var propSelector = new PropertyQueryImpl();
-        guardParserException(ctx.restMemberSelector());
-        propSelector.appendField(ctx.restMemberSelector().getText());
+        var segments = PeekingIterator.of(ctx.segment().iterator());
 
-        if (!ctx.segment().isEmpty()) {
-            collectPropertyQuery(propSelector, PeekingIterator.of(ctx.segment().iterator()));
-        }
+        var relativeQuery = new RelativeQueryNode();
+        var propertySelector = transformPropertySelector(relativeQuery, ctx.restMemberSelector(), segments);
+        relativeQuery.addNode(propertySelector);
 
-        return propSelector;
+        collectSelectorNodes(relativeQuery, segments);
+
+        return relativeQuery;
     }
 
-    private PropertyQuery compile(JsonPathMongoParser.RelativeQueryContext ctx) {
+    private RelativeQueryNode transform(JsonPathMongoParser.RelativeQueryContext ctx) {
         guardParserException(ctx);
 
-        var segments = PeekingIterator.of(ctx.segment().iterator());
-        return compilePropertyQuery(segments.next(), segments);
+        var relativeQuery = new RelativeQueryNode();
+        collectSelectorNodes(relativeQuery, PeekingIterator.of(ctx.segment().iterator()));
+
+        return relativeQuery;
     }
 
-    private void collectPropertyQuery(
-        PropertyQueryImpl propertySelector,
+    private void collectSelectorNodes(
+        RelativeQueryNode relativeQuery,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
-        collectPropertyQueryPath(propertySelector, segments);
-        collectPropertyQueryFilter(propertySelector, segments);
+        while (segments.hasNext()) {
+            var next = segments.next();
+            guardParserException(next);
 
-        if (segments.hasNext()) {
-            var childSelector = compilePropertyQuery(segments.next(), segments);
-            propertySelector.setChildSelector(childSelector);
+            if (next.memberNameShortHand() != null) {
+                var propertySelector = transformPropertySelector(
+                    relativeQuery,
+                    next.memberNameShortHand(),
+                    segments
+                );
+                relativeQuery.addNode(propertySelector);
+                continue;
+            }
+
+            if (next.bracketedExpression() == null) {
+                throw new AssertionError("invalid parser state");
+            }
+            var bracketedExpression = next.bracketedExpression();
+            guardParserException(bracketedExpression);
+
+            if (bracketedExpression.filterSelector() != null) {
+                var filterExpression = transform(bracketedExpression.filterSelector());
+                relativeQuery.addNode(filterExpression);
+                continue;
+            }
+
+            throw new AssertionError("invalid parser state");
         }
     }
 
-    private QueryNode compile(JsonPathMongoParser.RestComparisonQueryContext ctx) {
+    private FieldSelectorNode transformPropertySelector(
+        RelativeQueryNode relativeQuery,
+        JsonPathMongoParser.MemberNameShortHandContext ctx,
+        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
+    ) {
+        guardParserException(ctx);
+        return transformPropertySelector(
+            relativeQuery,
+            ctx.SAFE_IDENTIFIER().getText(),
+            segments
+        );
+    }
+
+    private FieldSelectorNode transformPropertySelector(
+        RelativeQueryNode relativeQuery,
+        JsonPathMongoParser.RestMemberSelectorContext ctx,
+        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
+    ) {
+        guardParserException(ctx);
+        return transformPropertySelector(
+            relativeQuery,
+            ctx.SAFE_IDENTIFIER().getText(),
+            segments
+        );
+    }
+
+    private FieldSelectorNode transformPropertySelector(
+        RelativeQueryNode relativeQuery,
+        String startField,
+        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
+    ) {
+        var path = new LinkedList<String>();
+        path.add(startField);
+        collectPropertySelectorPath(path, segments);
+        return new FieldSelectorNode(path, relativeQuery);
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
-        var leftNode = compile(ctx.restShortRelativeQuery());
-        return compileComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
+        var leftNode = transform(ctx.restShortRelativeQuery());
+        return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
     }
 
-    private ComparingQuery compileComparison(JsonPathMongoParser.ComparisonExpressionContext comparison) {
+    private RelativeValueComparingNode transformComparison(JsonPathMongoParser.ComparisonExpressionContext comparison) {
         guardParserException(comparison);
 
-        var leftNode = compile(comparison.relativeQuery());
-        return compileComparison(leftNode, comparison.literal(), comparison.comparisonOperator());
+        var leftNode = transform(comparison.relativeQuery());
+        return transformComparison(leftNode, comparison.literal(), comparison.comparisonOperator());
     }
 
-    private ComparingQuery compileComparison(
-        PropertyQuery propertyQuery,
+    private RelativeValueComparingNode transformComparison(
+        RelativeQueryNode propertyQuery,
         JsonPathMongoParser.LiteralContext literal,
         JsonPathMongoParser.ComparisonOperatorContext operatorCtx
     ) {
-        var rightNode = compile(literal);
+        var valueNode = transformLiteral(literal);
 
         var operator = switch (operatorCtx.getText()) {
             case "==" -> ComparisonOperator.EQ;
@@ -119,67 +186,43 @@ public class JsonPathCompilerPass {
             default -> throw new AssertionError();
         };
 
-        return new ComparingQuery(propertyQuery, rightNode, operator);
+        return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
     }
 
-    private PropertyQuery compilePropertyQuery(
-        JsonPathMongoParser.SegmentContext startSegment,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
-        var propertySelector = new PropertyQueryImpl();
-        propertySelector.appendField(startSegment.memberNameShortHand().SAFE_IDENTIFIER().getText());
-
-        collectPropertyQuery(propertySelector, segments);
-        return propertySelector;
-    }
-
-
-    private static void collectPropertyQueryPath(
-        PropertyQueryImpl propertySelector,
+    private static void collectPropertySelectorPath(
+        LinkedList<String> path,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         while (segments.hasNext()) {
             var segment = segments.peek();
+            guardParserException(segment);
             if (segment.memberNameShortHand() != null) {
                 segments.next();
                 var shortHand = segment.memberNameShortHand();
                 guardParserException(shortHand);
-                propertySelector.appendField(shortHand.SAFE_IDENTIFIER().getText());
+                path.add(shortHand.SAFE_IDENTIFIER().getText());
             } else {
                 return;
             }
         }
     }
 
-    private void collectPropertyQueryFilter(
-        PropertyQueryImpl propertySelector,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
-        while (segments.hasNext()) {
-            var segment = segments.peek();
-            if (segment.bracketedExpression() == null) break;
-
-            var bracketedExpression = segment.bracketedExpression();
-            if (bracketedExpression.filterQuery() == null) break;
-
-            segments.next();
-            var filterExpression = bracketedExpression.filterQuery();
-            var filterNode = compile(filterExpression);
-            propertySelector.addFilter(filterNode);
-        }
-    }
-
-    private QueryNode compile(JsonPathMongoParser.FilterQueryContext filterCtx) {
+    private PropertyFilterNode transform(JsonPathMongoParser.FilterSelectorContext filterCtx) {
         guardParserException(filterCtx);
 
         var logicalExpression = Objects.requireNonNull(filterCtx.logicalExpression());
         guardParserException(logicalExpression);
 
         var comparison = Objects.requireNonNull(logicalExpression.comparisonExpression());
-        return compileComparison(comparison);
+        return transformComparison(comparison);
     }
 
-    private ValueNode compile(JsonPathMongoParser.LiteralContext literal) {
+    private ValueNode transformLiteral(JsonPathMongoParser.LiteralContext literal) {
+        guardParserException(literal);
+        if (literal.INT() != null) {
+            var number = Integer.valueOf(literal.INT().getText());
+            return new ValueNode(number);
+        }
         if (literal.QUOTED_TEXT() != null) {
             return new ValueNode(processQuotedText(literal.QUOTED_TEXT().getText()));
         }

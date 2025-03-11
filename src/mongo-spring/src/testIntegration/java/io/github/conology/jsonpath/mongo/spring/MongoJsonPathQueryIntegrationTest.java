@@ -51,7 +51,7 @@ class MongoJsonPathQueryIntegrationTest {
     @ParameterizedTest(name = "[{index}] {0}: {2}")
     @CsvFileSource(resources = "/MongoJsonPathQueryIntegrationTest.csv", numLinesToSkip = 1)
     void itQueries(String ignored, String matched, String query) {
-        var criteria = MongoCriteriaCompilerPass.parse(query);
+        var criteria = new JsonPathToCriteriaCompiler().compile(query);
         System.err.println(
             query + " -> " + criteria.getCriteriaObject().toJson()
         );

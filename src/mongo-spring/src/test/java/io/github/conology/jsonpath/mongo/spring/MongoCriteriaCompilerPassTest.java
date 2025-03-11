@@ -11,7 +11,7 @@ class MongoCriteriaCompilerPassTest {
     @ParameterizedTest(name = "{index} {0}")
     @CsvFileSource(resources = "/MongoCriteriaCompilerPassTest.csv", numLinesToSkip = 1)
     void test(String input, String expected) {
-        var criteria = MongoCriteriaCompilerPass.parse(input);
+        var criteria = new JsonPathToCriteriaCompiler().compile(input);
         assertEquals(expected, criteria.getCriteriaObject().toJson());
     }
 

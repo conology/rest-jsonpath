@@ -3,7 +3,7 @@ store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}
 @.store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
 store.book,"{""store.book"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
 "book[?@.author==""Charles Darwin""]","{""book"": {""$elemMatch"": {""author"": ""Charles Darwin""}}}"
-"book[?@.author==""Darwin""].price","{""book"": {""$elemMatch"": {""author"": ""Darwin""}}, ""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
+"book[?@.author==""Darwin""].price","{""book"": {""$elemMatch"": {""author"": ""Darwin"", ""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}"
 "book[?@.author==""Darwin""][?@.category==""fiction""]","{""book"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction""}}}"
 book[?@.author],"{""book"": {""author"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}"
 "store == ""The Book Haven""","{""store"": ""The Book Haven""}"

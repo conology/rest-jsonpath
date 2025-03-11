@@ -1,4 +1,4 @@
-package io.github.conology.jsonpath.core;
+package io.github.conology.jsonpath.core.ast;
 
 public enum ComparisonOperator {
     EQ,
