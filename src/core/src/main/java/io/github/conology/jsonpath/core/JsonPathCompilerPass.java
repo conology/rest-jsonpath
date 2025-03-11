@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.LinkedList;
-import java.util.Objects;
 
 public class JsonPathCompilerPass {
 
@@ -47,17 +46,17 @@ public class JsonPathCompilerPass {
         guardParserException(ctx);
 
         if (ctx.restShortRelativeQuery() != null) {
-            return transform(ctx.restShortRelativeQuery());
+            return transformRelativeQuery(ctx.restShortRelativeQuery());
         }
 
         if (ctx.relativeQuery() != null) {
-            return transform(ctx.relativeQuery());
+            return transformRelativeQuery(ctx.relativeQuery());
         }
 
         throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transform(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restMemberSelector() == null) {
@@ -75,7 +74,7 @@ public class JsonPathCompilerPass {
         return relativeQuery;
     }
 
-    private RelativeQueryNode transform(JsonPathMongoParser.RelativeQueryContext ctx) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RelativeQueryContext ctx) {
         guardParserException(ctx);
 
         var relativeQuery = new RelativeQueryNode();
@@ -103,7 +102,7 @@ public class JsonPathCompilerPass {
             }
 
             if (next.bracketedExpression() == null) {
-                throw new AssertionError("invalid parser state");
+                throw failParserLexerMismatch();
             }
             var bracketedExpression = next.bracketedExpression();
             guardParserException(bracketedExpression);
@@ -114,7 +113,7 @@ public class JsonPathCompilerPass {
                 continue;
             }
 
-            throw new AssertionError("invalid parser state");
+            throw failParserLexerMismatch();
         }
     }
 
@@ -158,14 +157,14 @@ public class JsonPathCompilerPass {
     private PropertyFilterNode transform(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
-        var leftNode = transform(ctx.restShortRelativeQuery());
+        var leftNode = transformRelativeQuery(ctx.restShortRelativeQuery());
         return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
     }
 
     private RelativeValueComparingNode transformComparison(JsonPathMongoParser.ComparisonExpressionContext comparison) {
         guardParserException(comparison);
 
-        var leftNode = transform(comparison.relativeQuery());
+        var leftNode = transformRelativeQuery(comparison.relativeQuery());
         return transformComparison(leftNode, comparison.literal(), comparison.comparisonOperator());
     }
 
@@ -209,12 +208,38 @@ public class JsonPathCompilerPass {
 
     private PropertyFilterNode transform(JsonPathMongoParser.FilterSelectorContext filterCtx) {
         guardParserException(filterCtx);
+        
+        if (filterCtx.logicalExpression() != null) {
+            return transformLogicalExpression(filterCtx.logicalExpression());
+        }
+        
+        throw failParserLexerMismatch();
+    }
 
-        var logicalExpression = Objects.requireNonNull(filterCtx.logicalExpression());
+    private PropertyFilterNode transformLogicalExpression(JsonPathMongoParser.LogicalExpressionContext logicalExpression) {
         guardParserException(logicalExpression);
 
-        var comparison = Objects.requireNonNull(logicalExpression.comparisonExpression());
-        return transformComparison(comparison);
+        if (logicalExpression.comparisonExpression() != null) {
+            return transformComparison(logicalExpression.comparisonExpression());
+        }
+
+        if (logicalExpression.existenceExpression() != null) {
+            return transformExistenceExpression(logicalExpression.existenceExpression());
+        }
+
+        throw failParserLexerMismatch();
+    }
+
+    private ExistenceFilterNode transformExistenceExpression(
+        JsonPathMongoParser.ExistenceExpressionContext ctx
+    ) {
+        guardParserException(ctx);
+        
+        if (ctx.relativeQuery() != null) {
+            return new ExistenceFilterNode(transformRelativeQuery(ctx.relativeQuery()));
+        }
+        
+        throw failParserLexerMismatch();
     }
 
     private ValueNode transformLiteral(JsonPathMongoParser.LiteralContext literal) {

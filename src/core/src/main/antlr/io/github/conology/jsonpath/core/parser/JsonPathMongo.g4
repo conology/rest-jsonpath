@@ -24,7 +24,7 @@ segment:
 memberNameShortHand: '.' SAFE_IDENTIFIER;
 bracketedExpression: '[' filterSelector ']';
 filterSelector: '?' logicalExpression;
-logicalExpression: comparisonExpression;
+logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:
     relativeQuery comparisonOperator literal
