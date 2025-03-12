@@ -1,4 +1,4 @@
-input,expected
+input,mongoQuery
 store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
 @.store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
 store.book,"{""store.book"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}"
@@ -8,3 +8,6 @@ store.book,"{""store.book"": {""$exists"": true, ""$ne"": null, ""$not"": {""$si
 books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}"
 "store == ""The Book Haven""","{""store"": ""The Book Haven""}"
 "books[?@.authors[?@.name==""Darwin""]]","{""books"": {""$elemMatch"": {""authors"": {""$elemMatch"": {""name"": ""Darwin""}}}}}"
+store.books[*].name,
+"books[?@.author == ""chuck"" && @.title == ""norris""]",!unsupported
+"books[?@.title == ""chuck"" || @.title == ""norris""]",
