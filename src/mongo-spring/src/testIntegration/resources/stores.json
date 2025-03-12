@@ -1,194 +1,131 @@
 [
   {
-    "name": "The Book Haven",
-    "specials": {
-      "fooFlag": "bar"
-    },
-    "created": { "$date": "2023-05-15T14:30:00Z" },
+    "id": "1",
+    "name": "Downtown Bookstore",
+    "@type": "independent",
+    "created": "2024-06-01T08:30:00Z",
     "owner": {
       "firstName": "Alice",
-      "lastName": "Robertson",
-      "age": 45,
-      "contacts": [
-        { "type": "phone", "value": "+1-555-1234" },
-        { "type": "mail", "value": "alice@bookhaven.com" },
-        { "type": "secondMail", "value": "tom@bookhaven.com" }
-      ]
+      "lastName": "Johnson",
+      "nickname": "Downy"
     },
-    "books": [
+    "employees": [
       {
-        "title": "Echoes of Tomorrow",
-        "author": {
-          "firstName": "John",
-          "lastName": "Everwood",
-          "age": 50,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-5678" },
-            { "type": "mail", "value": "john.everwood@stories.com" }
-          ]
-        },
-        "published": { "$date": "2021-10-10T10:00:00Z" },
-        "genre": "Science Fiction"
+        "firstName": "Alice",
+        "lastName": "Johnson",
+        "salary": 50000.33
       },
       {
-        "title": "The Forgotten Path",
-        "author": {
-          "firstName": "Samantha",
-          "lastName": "Lorne",
-          "age": 38,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-8765" },
-            { "type": "mail", "value": "samantha.lorne@fictionworld.com" }
-          ]
-        },
-        "published": { "$date": "2018-06-22T08:45:00Z" },
-        "genre": "Mystery"
-      }
-    ],
-    "customers": [
-      {
-        "firstName": "Daniel",
+        "firstName": "Bob",
         "lastName": "Smith",
-        "age": 30,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-3344" },
-          { "type": "mail", "value": "daniel.smith@example.com" }
-        ]
-      },
+        "salary": 48000.33
+      }
+    ],
+    "books": [
       {
-        "firstName": "Lisa",
-        "lastName": "Thompson",
-        "age": 28,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-7788" },
-          { "type": "mail", "value": "lisa.thompson@example.com" }
+        "title": "The Great Adventure",
+        "author": {
+          "firstName": "Alice",
+          "lastName": "Johnson"
+        },
+        "chapters": [
+          {
+            "id": 1,
+            "title": "Beginnings",
+            "pageCount": 10
+          },
+          {
+            "id": 2,
+            "title": "The Journey",
+            "pageCount": 15
+          }
         ]
       }
     ]
   },
   {
-    "name": "Timeless Tales",
-    "created": { "$date": "2019-11-30T09:00:00Z" },
-    "owner": {
-      "firstName": "Michael",
-      "lastName": "Stevenson",
-      "age": 52,
-      "contacts": [
-        { "type": "phone", "value": "+1-555-2222" },
-        { "type": "mail", "value": "michael@timelesstales.com" },
-        { "type": "secondMail", "value": "alice@bookhaven.com" }
-      ]
-    },
-    "books": [
+    "id": "2",
+    "name": "Riverside Books",
+    "@type": "chain",
+    "created": "2023-05-15T09:45:00Z",
+    "employees": [
       {
-        "title": "Legends of the Lost",
-        "author": {
-          "firstName": "Eleanor",
-          "lastName": "Finch",
-          "age": 45,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-9999" },
-            { "type": "mail", "value": "eleanor.finch@mythos.com" }
-          ]
-        },
-        "published": { "$date": "2020-03-15T13:15:00Z" },
-        "genre": "Fantasy"
-      },
-      {
-        "title": "The Silent Observer",
-        "author": {
-          "firstName": "Harold",
-          "lastName": "Grant",
-          "age": 60,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-6655" },
-            { "type": "mail", "value": "harold.grant@mysterywriters.com" }
-          ]
-        },
-        "published": { "$date": "2017-09-01T07:30:00Z" },
-        "genre": "Thriller"
+        "firstName": "Charlie",
+        "lastName": "Brown",
+        "salary": 52000.66
       }
     ],
-    "customers": [
+    "books": [
       {
-        "firstName": "Emily",
-        "lastName": "White",
-        "age": 34,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-4455" },
-          { "type": "mail", "value": "emily.white@example.com" }
-        ]
-      },
-      {
-        "firstName": "Robert",
-        "lastName": "King",
-        "age": 40,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-9900" },
-          { "type": "mail", "value": "robert.king@example.com" }
+        "title": "Mystery at the River",
+        "author": {
+          "firstName": "Diana",
+          "lastName": "Carter"
+        },
+        "chapters": [
+          {
+            "id": 1,
+            "title": "The First Clue",
+            "pageCount": 20
+          }
         ]
       }
     ]
   },
   {
-    "name": "Page Turners",
-    "created": { "$date": "2021-07-20T16:45:00Z" },
-    "owner": {
-      "firstName": "Sophia",
-      "lastName": "Martinez",
-      "age": 39,
-      "contacts": [
-        { "type": "phone", "value": "+1-555-1111" },
-        { "type": "mail", "value": "sophia@pageturners.com" }
-      ]
-    },
-    "books": [
+    "id": "3",
+    "name": "Mountain Reads",
+    "@type": "independent",
+    "created": "2022-11-20T14:10:00Z",
+    "employees": [
       {
-        "title": "Beneath the Starlit Sky",
-        "author": {
-          "firstName": "David",
-          "lastName": "Holloway",
-          "age": 44,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-4321" },
-            { "type": "mail", "value": "david.holloway@starlit.com" }
-          ]
-        },
-        "published": { "$date": "2022-12-05T11:00:00Z" },
-        "genre": "Romance"
-      },
-      {
-        "title": "Fragments of Time",
-        "author": {
-          "firstName": "Margaret",
-          "lastName": "Neal",
-          "age": 55,
-          "contacts": [
-            { "type": "phone", "value": "+1-555-6666" },
-            { "type": "mail", "value": "margaret.neal@historybooks.com" }
-          ]
-        },
-        "published": { "$date": "2019-05-10T09:20:00Z" },
-        "genre": "Historical Fiction"
+        "firstName": "Ethan",
+        "lastName": "Hawke",
+        "salary": 49000.66
       }
     ],
-    "customers": [
+    "books": [
       {
-        "firstName": "James",
-        "lastName": "Anderson",
-        "age": 42,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-2233" },
-          { "type": "mail", "value": "james.anderson@example.com" }
+        "title": "Lost in the Peaks",
+        "author": {
+          "firstName": "Fiona",
+          "lastName": "White"
+        },
+        "chapters": [
+          {
+            "id": 1,
+            "title": "The Climb",
+            "pageCount": 25
+          }
         ]
-      },
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Seaside Stories",
+    "@type": "rental",
+    "owner": {
+      "firstName": "George",
+      "lastName": "Miller",
+      "salary": 55000.00
+    },
+    "created": "2021-07-10T17:30:00Z",
+    "employees": [],
+    "books": [
       {
-        "firstName": "Olivia",
-        "lastName": "Carter",
-        "age": 29,
-        "contacts": [
-          { "type": "phone", "value": "+1-555-8899" },
-          { "type": "mail", "value": "olivia.carter@example.com" }
+        "title": "Ocean Wonders",
+        "author": {
+          "firstName": "Hannah",
+          "lastName": "Stewart",
+          "salary": 57000.00
+        },
+        "chapters": [
+          {
+            "id": 1,
+            "title": "Under the Waves",
+            "pageCount": 30
+          }
         ]
       }
     ]

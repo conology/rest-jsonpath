@@ -3,12 +3,14 @@ package io.github.conology.jsonpath.mongo.spring;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
+import io.github.conology.jsonpath.mongo.spring.model.Store;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.opentest4j.TestAbortedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
@@ -22,7 +24,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,50 +49,54 @@ class MongoJsonPathQueryIntegrationTest {
     private MongoCollection<Document> storeCollection;
 
 
-    @ParameterizedTest(name = "[{index}] {0}: {2}")
+    @ParameterizedTest(name = "[{index}] {0}")
     @CsvFileSource(resources = "/MongoJsonPathQueryIntegrationTest.csv", numLinesToSkip = 1)
-    void itQueries(String ignored, String matched, String query) {
-        var criteria = new JsonPathToCriteriaCompiler().compile(query);
-        System.err.println(
-            query + " -> " + criteria.getCriteriaObject().toJson()
-        );
+    void itQueries(String restQuery, String matchId, String error) {
+        if (error == null) {
+            if (matchId == null) {
+                itQueriesEmpty(restQuery);
+            } else {
+                itQueriesId(restQuery, matchId);
+            }
+        } else {
+            throw new TestAbortedException("testing of error type " + error + "not implemented");
+        }
+    }
 
-        var stores = mongoTemplate.find(
+    private void itQueriesEmpty(String restQuery) {
+        var stores = executeQuery(restQuery);
+        assertThat(stores).isEmpty();
+    }
+
+    private void itQueriesId(String restQuery, String matchId) {
+        var stores = executeQuery(restQuery);
+        assertThat(stores).singleElement()
+            .hasFieldOrPropertyWithValue("name", matchId);
+    }
+
+    private List<Store> executeQuery(String restQuery) {
+        var criteria = new JsonPathToCriteriaCompiler().compile(restQuery);
+
+        return mongoTemplate.find(
             query(criteria),
             Store.class,
             COLLECTION_NAME
         );
-
-        if (matched == null) {
-            assertThat(stores).isEmpty();
-        } else {
-            assertThat(stores).singleElement()
-                .hasFieldOrPropertyWithValue("name", matched);
-        }
     }
 
     @BeforeAll
     void seedCollection() throws IOException {
-        var stores = objectMapper.readValue(storesFile, new TypeReference<List<Document>>() {});
-
-        stores.getFirst().put("created", Instant.parse("2023-05-15T14:30:00Z"));
-        stores.get(1).put("created", Instant.parse("2019-11-30T09:00:00Z"));
-        stores.get(2).put("created", Instant.parse("1995-07-20T16:45:00Z"));
+        var stores = objectMapper.readValue(storesFile, new TypeReference<List<Store>>() {});
 
         if (!mongoTemplate.collectionExists(COLLECTION_NAME)) {
             mongoTemplate.createCollection(COLLECTION_NAME);
         }
-        storeCollection = mongoTemplate.getCollection(COLLECTION_NAME);
-        storeCollection.insertMany(stores);
+        mongoTemplate.insert(stores, COLLECTION_NAME);
     }
 
     @AfterAll
     void dropCollection() {
-        storeCollection.drop();
-    }
-
-    public static class Store {
-        String name;
+        mongoTemplate.dropCollection(COLLECTION_NAME);
     }
 
     @SpringBootConfiguration

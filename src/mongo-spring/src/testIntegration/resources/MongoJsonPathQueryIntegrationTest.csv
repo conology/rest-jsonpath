@@ -1,4 +1,5 @@
-Test Name,Match,Query
-byFieldExistence,The Book Haven,specials.fooFlag
-byNestedFieldValue,The Book Haven,"books[?@.title==""Echoes of Tomorrow""]"
-byMultiAttribute,Timeless Tales,"owner.contacts[?@.type==""secondMail"" && @.value==""alice@bookhaven.com""]"
+Query,Match,error
+owner.nickname,Downtown Bookstore,
+"books[?@.title==""The Great Adventure""]",Downtown Bookstore,
+"owner.contacts[?@.type==""secondMail"" && @.value==""alice@bookhaven.com""]",,todo
+"[""@type""] == ""independent""",Downtown Bookstore,todo
