@@ -2,10 +2,7 @@ package io.github.conology.jsonpath.mongo.spring;
 
 
 import io.github.conology.jsonpath.core.PeekingIterator;
-import io.github.conology.jsonpath.core.ast.FieldSelectorNode;
-import io.github.conology.jsonpath.core.ast.PropertyFilterNode;
-import io.github.conology.jsonpath.core.ast.RelativeQueryNode;
-import io.github.conology.jsonpath.core.ast.SelectorNode;
+import io.github.conology.jsonpath.core.ast.*;
 import io.github.conology.jsonpath.mongo.spring.ast.MongoElementMatch;
 import io.github.conology.jsonpath.mongo.spring.ast.MongoFieldSelector;
 import io.github.conology.jsonpath.mongo.spring.ast.MongoPropertyAssertion;
@@ -78,6 +75,10 @@ public class NestedValueTestCompiler {
             var next = nodes.peek();
             var handled = switch (next) {
                 case SelectorNode.Constant.WILDCARD -> true;
+                case IndexSelectorNode indexSelectorNode -> {
+                    path.add(Integer.toString(indexSelectorNode.getIndex()));
+                    yield true;
+                }
                 case FieldSelectorNode fieldSelectorNode -> {
                     path.addAll(fieldSelectorNode.getPath());
                     yield true;

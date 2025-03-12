@@ -22,7 +22,7 @@ segment:
 	;
 
 memberNameShortHand: '.' SAFE_IDENTIFIER;
-bracketedExpression: '[' (filterSelector|WILDCARD_SELECTOR) ']';
+bracketedExpression: '[' (filterSelector|WILDCARD_SELECTOR|INT) ']';
 filterSelector: '?' logicalExpression;
 logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;

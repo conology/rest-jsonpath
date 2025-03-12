@@ -6,6 +6,7 @@ import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.LinkedList;
 
@@ -101,25 +102,38 @@ public class JsonPathCompilerPass {
                 continue;
             }
 
-            if (next.bracketedExpression() == null) {
-                throw failParserLexerMismatch();
-            }
-            var bracketedExpression = next.bracketedExpression();
-            guardParserException(bracketedExpression);
-
-            if (bracketedExpression.filterSelector() != null) {
-                var filterExpression = transform(bracketedExpression.filterSelector());
-                relativeQuery.addNode(filterExpression);
+            if (next.bracketedExpression() != null) {
+                var bracketedExpression = next.bracketedExpression();
+                transformBracketedExpression(relativeQuery, bracketedExpression);
                 continue;
             }
 
-            if (bracketedExpression.WILDCARD_SELECTOR() != null) {
-                relativeQuery.addNode(SelectorNode.Constant.WILDCARD);
-                continue;
-            }
 
             throw failParserLexerMismatch();
         }
+    }
+
+    private void transformBracketedExpression(RelativeQueryNode relativeQuery, JsonPathMongoParser.BracketedExpressionContext bracketedExpression) {
+        guardParserException(bracketedExpression);
+
+        if (bracketedExpression.filterSelector() != null) {
+            var filterExpression = transform(bracketedExpression.filterSelector());
+            relativeQuery.addNode(filterExpression);
+            return;
+        }
+
+        if (bracketedExpression.WILDCARD_SELECTOR() != null) {
+            relativeQuery.addNode(SelectorNode.Constant.WILDCARD);
+            return;
+        }
+
+        if (bracketedExpression.INT() != null) {
+            var index = Integer.parseInt(bracketedExpression.INT().getText());
+            relativeQuery.addNode(new IndexSelectorNode(index));
+            return;
+        }
+
+        throw failParserLexerMismatch();
     }
 
     private FieldSelectorNode transformPropertySelector(

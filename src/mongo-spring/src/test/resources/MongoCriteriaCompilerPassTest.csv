@@ -13,7 +13,7 @@ price == 13.55,,,
 name =~ /^(charles|darwin)$/misx,,,
 stores.books[*].name,"{""stores.books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"wildcard works only on arrays, not on objects. wildcard is not required"
 stores[?@.books[*].name],"{""stores"": {""$elemMatch"": {""books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
-store.books[0].name,,,
+store.books[0].name,"{""store.books.0.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "books[?@.author==""Charles Darwin""]","{""books"": {""$elemMatch"": {""author"": ""Charles Darwin""}}}",,
 "books[?@.author==""Darwin""].price","{""books"": {""$elemMatch"": {""author"": ""Darwin"", ""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 "books[?@.author==""Darwin""][?@.category==""fiction""]","{""books"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction""}}}",,
