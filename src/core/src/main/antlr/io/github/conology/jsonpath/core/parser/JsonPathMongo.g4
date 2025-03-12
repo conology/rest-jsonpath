@@ -22,7 +22,7 @@ segment:
 	;
 
 memberNameShortHand: '.' SAFE_IDENTIFIER;
-bracketedExpression: '[' filterSelector ']';
+bracketedExpression: '[' (filterSelector|WILDCARD_SELECTOR) ']';
 filterSelector: '?' logicalExpression;
 logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;
@@ -41,6 +41,7 @@ fragment UNICODE: 'u' HEX HEX HEX HEX;
 fragment HEX: [0-9a-fA-F];
 
 
+WILDCARD_SELECTOR: '*';
 COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
 SAFE_IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
 ESCAPESEQUENCE: '\\' (["\\/bfnrt] | UNICODE);

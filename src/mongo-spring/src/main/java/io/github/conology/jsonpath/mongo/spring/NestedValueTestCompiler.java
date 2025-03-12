@@ -76,9 +76,16 @@ public class NestedValueTestCompiler {
 
         while (nodes.hasNext()) {
             var next = nodes.peek();
-            if (next instanceof FieldSelectorNode fieldSelectorNode) {
+            var handled = switch (next) {
+                case SelectorNode.Constant.WILDCARD -> true;
+                case FieldSelectorNode fieldSelectorNode -> {
+                    path.addAll(fieldSelectorNode.getPath());
+                    yield true;
+                }
+                case PropertyFilterNode ignored -> false;
+            };
+            if (handled) {
                 nodes.next();
-                path.addAll(fieldSelectorNode.getPath());
             } else {
                 break;
             }

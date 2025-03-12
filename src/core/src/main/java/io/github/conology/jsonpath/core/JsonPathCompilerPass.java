@@ -113,6 +113,11 @@ public class JsonPathCompilerPass {
                 continue;
             }
 
+            if (bracketedExpression.WILDCARD_SELECTOR() != null) {
+                relativeQuery.addNode(SelectorNode.Constant.WILDCARD);
+                continue;
+            }
+
             throw failParserLexerMismatch();
         }
     }
