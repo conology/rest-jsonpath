@@ -25,7 +25,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""author"": ""chuck"", ""title"": ""norris""}}}",,
 "externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!error,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
-"firstName == """"charles"""" && lastName == """"darwin""""",,,
+"firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",,,
 "books[?@.title == ""chuck"" || @.title == ""norris""]",,,
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,

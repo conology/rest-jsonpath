@@ -24,7 +24,23 @@ public class JsonPathCompilerPass {
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
         guardParserException(restQueryContext);
-        return transform(restQueryContext.restBasicQuery());
+        return transform(restQueryContext.restAndQuery());
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.RestAndQueryContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.restBasicQuery().isEmpty()) {
+            throw failParserLexerMismatch();
+        }
+
+        var expressions = ctx.restBasicQuery()
+            .stream()
+            .map(this::transform)
+            .toList();
+
+        return expressions.size() == 1 ? expressions.getFirst()
+            : new AndFilterNode(expressions);
     }
 
     public PropertyFilterNode transform(JsonPathMongoParser.RestBasicQueryContext ctx) {
