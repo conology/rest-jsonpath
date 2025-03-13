@@ -4,11 +4,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.function.Consumer;
 
-public class DelegatingMongoValueAssertion implements MongoValueAssertion {
+public class MongoDelegatingValueAssertion implements MongoValueAssertion {
 
     private final Consumer<Criteria> strategy;
 
-    public DelegatingMongoValueAssertion(Consumer<Criteria> existenceCriteriaStrategy) {
+    public MongoDelegatingValueAssertion(Consumer<Criteria> existenceCriteriaStrategy) {
         this.strategy = existenceCriteriaStrategy;
     }
 
@@ -18,7 +18,7 @@ public class DelegatingMongoValueAssertion implements MongoValueAssertion {
     }
 
     public static MongoValueAssertion createDefaultExistenceAssertion() {
-        return new DelegatingMongoValueAssertion(
+        return new MongoDelegatingValueAssertion(
             criteria -> criteria
                 .exists(true)
                 .ne(null)

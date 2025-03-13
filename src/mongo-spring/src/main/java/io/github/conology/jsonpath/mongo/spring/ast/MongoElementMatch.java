@@ -6,9 +6,9 @@ import java.util.List;
 
 public final class MongoElementMatch implements MongoPropertyAssertion {
 
-    private final List<MongoPropertyTest> propertyTests;
+    private final List<MongoTestNode> propertyTests;
 
-    public MongoElementMatch(List<MongoPropertyTest> propertyTests) {
+    public MongoElementMatch(List<MongoTestNode> propertyTests) {
         this.propertyTests = propertyTests;
     }
 
@@ -19,8 +19,8 @@ public final class MongoElementMatch implements MongoPropertyAssertion {
     @Override
     public void accept(Criteria criteria) {
         var elemMatch = new Criteria();
-        for (MongoPropertyTest propertyTest : propertyTests) {
-            propertyTest.accept(elemMatch);
+        for (MongoTestNode propertyTest : propertyTests) {
+            propertyTest.visit(elemMatch);
         }
         criteria.elemMatch(elemMatch);
     }

@@ -23,6 +23,7 @@ testing {
             dependencies {
                 implementation(project())
                 implementation("org.junit.jupiter:junit-jupiter")
+                implementation("org.assertj:assertj-core:3.27.2")
             }
         }
 

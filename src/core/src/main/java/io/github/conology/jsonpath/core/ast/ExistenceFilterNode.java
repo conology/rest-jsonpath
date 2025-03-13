@@ -8,7 +8,6 @@ public final class ExistenceFilterNode implements PropertyFilterNode {
         this.relativeQueryNode = relativeQueryNode;
     }
 
-    @Override
     public RelativeQueryNode getRelativeQueryNode() {
         return relativeQueryNode;
     }

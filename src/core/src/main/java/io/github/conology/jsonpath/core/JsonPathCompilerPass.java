@@ -3,6 +3,7 @@ package io.github.conology.jsonpath.core;
 import io.github.conology.jsonpath.core.ast.*;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoLexer;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -16,6 +17,7 @@ public class JsonPathCompilerPass {
     public static PropertyFilterNode parseRestQuery(String input) {
         var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
         var parser = new JsonPathMongoParser(new BufferedTokenStream(lexer));
+        parser.setErrorHandler(new BailErrorStrategy());
 
         return new JsonPathCompilerPass().transform(parser.restQuery());
     }
@@ -232,7 +234,7 @@ public class JsonPathCompilerPass {
         return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
     }
 
-    private static Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
+    private static final Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
     private RegexFilterNode transformRegexComparison(RelativeQueryNode queryNode, JsonPathMongoParser.RegexComparisonContext ctx) {
         guardParserException(ctx);
 
@@ -274,11 +276,27 @@ public class JsonPathCompilerPass {
     private PropertyFilterNode transform(JsonPathMongoParser.FilterSelectorContext filterCtx) {
         guardParserException(filterCtx);
         
-        if (filterCtx.logicalExpression() != null) {
-            return transformLogicalExpression(filterCtx.logicalExpression());
+        if (filterCtx.andExpression() != null) {
+            return transform(filterCtx.andExpression());
         }
         
         throw failParserLexerMismatch();
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.AndExpressionContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.logicalExpression().isEmpty()) {
+            throw failParserLexerMismatch();
+        }
+
+        var expressions = ctx.logicalExpression()
+            .stream()
+            .map(this::transformLogicalExpression)
+            .toList();
+
+        return expressions.size() == 1 ? expressions.getFirst()
+            : new AndFilterNode(expressions);
     }
 
     private PropertyFilterNode transformLogicalExpression(JsonPathMongoParser.LogicalExpressionContext logicalExpression) {

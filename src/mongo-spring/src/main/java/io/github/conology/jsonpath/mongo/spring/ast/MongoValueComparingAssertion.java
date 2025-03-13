@@ -3,12 +3,12 @@ package io.github.conology.jsonpath.mongo.spring.ast;
 import io.github.conology.jsonpath.core.ast.ComparisonOperator;
 import org.springframework.data.mongodb.core.query.Criteria;
 
-public class ComparingMongoValueAssertion implements MongoValueAssertion {
+public class MongoValueComparingAssertion implements MongoValueAssertion {
 
     private final ComparisonOperator operator;
     private final Object value;
 
-    public ComparingMongoValueAssertion(ComparisonOperator operator, Object value) {
+    public MongoValueComparingAssertion(ComparisonOperator operator, Object value) {
         this.operator = operator;
         this.value = value;
     }

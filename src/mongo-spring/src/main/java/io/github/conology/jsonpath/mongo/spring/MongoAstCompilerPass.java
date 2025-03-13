@@ -3,7 +3,7 @@ package io.github.conology.jsonpath.mongo.spring;
 import io.github.conology.jsonpath.core.ast.*;
 import io.github.conology.jsonpath.mongo.spring.ast.*;
 
-import java.util.*;
+import java.util.List;
 
 public class MongoAstCompilerPass {
 
@@ -18,18 +18,34 @@ public class MongoAstCompilerPass {
         this.existenceAssertion = existenceAssertion;
     }
 
-    public MongoPropertyTest compile() {
-        return compile(ir);
+    public MongoTestNode compile() {
+        return compileTestNode(ir);
     }
 
-    public MongoPropertyTest compile(PropertyFilterNode filterNode) {
+    public MongoTestNode compileTestNode(PropertyFilterNode filterNode) {
+        if (filterNode instanceof AndFilterNode andNode) {
+            return compileAllOfTest(andNode);
+        }
+        return compilePropertyTest(filterNode);
+    }
+
+    private MongoTestNode compileAllOfTest(AndFilterNode andNode) {
+        return new MongoAllOfTestNode(
+            andNode.getNodes().stream()
+                .map(this::compilePropertyTest)
+                .toList()
+        );
+    }
+
+    public MongoPropertyTest compilePropertyTest(PropertyFilterNode filterNode) {
         return switch (filterNode) {
             case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
             case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
+            case AndFilterNode ignored ->
+                throw new IllegalArgumentException("nested and expressions are not supported");
         };
     }
-
     private MongoPropertyTest compilePropertyTest(RegexFilterNode node) {
         var assertion = new RegexMongoValueAssertion(
             node.getRegexPattern(),
@@ -51,7 +67,7 @@ public class MongoAstCompilerPass {
     }
 
     private MongoPropertyTest compilePropertyTest(RelativeValueComparingNode node) {
-        var assertion = new ComparingMongoValueAssertion(
+        var assertion = new MongoValueComparingAssertion(
             node.getOperator(),
             node.getValueNode().getValue()
         );
@@ -63,7 +79,7 @@ public class MongoAstCompilerPass {
     }
 
 
-    public String normalizePath(LinkedList<String> path) {
+    public String normalizePath(List<String> path) {
         return String.join(".", path);
     }
 
@@ -79,7 +95,7 @@ public class MongoAstCompilerPass {
                 ir,
                 existenceAssertion != null ?
                     existenceAssertion
-                    : DelegatingMongoValueAssertion.createDefaultExistenceAssertion()
+                    : MongoDelegatingValueAssertion.createDefaultExistenceAssertion()
             );
         }
 

@@ -18,7 +18,6 @@ public final class RegexFilterNode implements PropertyFilterNode {
         this.options = options;
     }
 
-    @Override
     public RelativeQueryNode getRelativeQueryNode() {
         return relativeQueryNode;
     }

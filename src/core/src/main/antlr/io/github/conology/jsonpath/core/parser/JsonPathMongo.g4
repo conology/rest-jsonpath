@@ -25,7 +25,8 @@ segment:
 
 memberNameShortHand: '.' SAFE_IDENTIFIER;
 bracketedExpression: '[' (filterSelector|WILDCARD_SELECTOR|INT) ']';
-filterSelector: '?' logicalExpression;
+filterSelector: '?' andExpression;
+andExpression: logicalExpression ( '&&' logicalExpression)*;
 logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:

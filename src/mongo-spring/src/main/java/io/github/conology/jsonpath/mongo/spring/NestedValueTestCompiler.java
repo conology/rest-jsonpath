@@ -3,10 +3,7 @@ package io.github.conology.jsonpath.mongo.spring;
 
 import io.github.conology.jsonpath.core.PeekingIterator;
 import io.github.conology.jsonpath.core.ast.*;
-import io.github.conology.jsonpath.mongo.spring.ast.MongoElementMatch;
-import io.github.conology.jsonpath.mongo.spring.ast.MongoFieldSelector;
-import io.github.conology.jsonpath.mongo.spring.ast.MongoPropertyAssertion;
-import io.github.conology.jsonpath.mongo.spring.ast.MongoPropertyTest;
+import io.github.conology.jsonpath.mongo.spring.ast.*;
 
 import java.util.LinkedList;
 
@@ -98,12 +95,12 @@ public class NestedValueTestCompiler {
     private MongoElementMatch compileElementMatch(
         PeekingIterator<SelectorNode> nodes
     ) {
-        var propertyTests = new LinkedList<MongoPropertyTest>();
+        var propertyTests = new LinkedList<MongoTestNode>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
             if (next instanceof PropertyFilterNode filterNode) {
                 nodes.next();
-                propertyTests.add(parent.compile(filterNode));
+                propertyTests.add(parent.compileTestNode(filterNode));
             } else {
                 break;
             }

@@ -12,7 +12,6 @@ public final class RelativeValueComparingNode implements PropertyFilterNode {
         this.operator = operator;
     }
 
-    @Override
     public RelativeQueryNode getRelativeQueryNode() {
         return queryNode;
     }
