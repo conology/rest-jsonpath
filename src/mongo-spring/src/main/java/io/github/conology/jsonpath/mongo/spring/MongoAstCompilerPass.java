@@ -26,7 +26,20 @@ public class MongoAstCompilerPass {
         return switch (filterNode) {
             case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
+            case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
         };
+    }
+
+    private MongoPropertyTest compilePropertyTest(RegexFilterNode node) {
+        var assertion = new RegexMongoValueAssertion(
+            node.getRegexPattern(),
+            node.getOptions()
+        );
+        return new NestedValueTestCompiler(
+            node.getRelativeQueryNode(),
+            this,
+            assertion
+        ).compile();
     }
 
     private MongoPropertyTest compilePropertyTest(ExistenceFilterNode node) {

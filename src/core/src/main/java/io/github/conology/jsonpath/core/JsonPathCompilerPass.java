@@ -6,9 +6,10 @@ import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.LinkedList;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class JsonPathCompilerPass {
 
@@ -32,7 +33,7 @@ public class JsonPathCompilerPass {
         }
 
         if (ctx.restComparisonQuery() != null) {
-            return transform(ctx.restComparisonQuery());
+            return transformComparison(ctx.restComparisonQuery());
         }
 
         throw failParserLexerMismatch();
@@ -173,18 +174,42 @@ public class JsonPathCompilerPass {
         return new FieldSelectorNode(path, relativeQuery);
     }
 
-    private PropertyFilterNode transform(JsonPathMongoParser.RestComparisonQueryContext ctx) {
+    private PropertyFilterNode transformComparison(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
+        if (ctx.restShortRelativeQuery() == null) {
+            throw failParserLexerMismatch();
+        }
         var leftNode = transformRelativeQuery(ctx.restShortRelativeQuery());
-        return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
+
+        if (ctx.regexComparison() != null) {
+            return transformRegexComparison(leftNode, ctx.regexComparison());
+        }
+
+        if (ctx.literal() != null && ctx.comparisonOperator() != null) {
+            return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
+        }
+
+        throw failParserLexerMismatch();
     }
 
-    private RelativeValueComparingNode transformComparison(JsonPathMongoParser.ComparisonExpressionContext comparison) {
-        guardParserException(comparison);
+    private PropertyFilterNode transformComparison(JsonPathMongoParser.ComparisonExpressionContext ctx) {
+        guardParserException(ctx);
 
-        var leftNode = transformRelativeQuery(comparison.relativeQuery());
-        return transformComparison(leftNode, comparison.literal(), comparison.comparisonOperator());
+        if (ctx.relativeQuery() == null) {
+            throw failParserLexerMismatch();
+        }
+        var leftNode = transformRelativeQuery(ctx.relativeQuery());
+
+        if (ctx.regexComparison() != null) {
+            return transformRegexComparison(leftNode, ctx.regexComparison());
+        }
+
+        if (ctx.literal() != null && ctx.comparisonOperator() != null) {
+            return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
+        }
+
+        throw failParserLexerMismatch();
     }
 
     private RelativeValueComparingNode transformComparison(
@@ -205,6 +230,27 @@ public class JsonPathCompilerPass {
         };
 
         return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
+    }
+
+    private static Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
+    private RegexFilterNode transformRegexComparison(RelativeQueryNode queryNode, JsonPathMongoParser.RegexComparisonContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.REGULAR_EXPRESSION() != null) {
+            var expression = ctx.REGULAR_EXPRESSION().getText();
+            var matcher = REGEX_PATTERN.matcher(expression);
+            if (!matcher.matches()) {
+                throw failParserLexerMismatch();
+            }
+            var pattern = matcher.group(1);
+            var options = matcher.group(2)
+                .chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toSet());
+            return new RegexFilterNode(queryNode, pattern, options);
+        }
+
+        throw failParserLexerMismatch();
     }
 
     private static void collectPropertySelectorPath(
