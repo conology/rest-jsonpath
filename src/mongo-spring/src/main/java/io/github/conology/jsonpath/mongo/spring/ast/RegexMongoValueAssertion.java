@@ -1,24 +1,27 @@
 package io.github.conology.jsonpath.mongo.spring.ast;
 
+import io.github.conology.jsonpath.core.ast.RegexFilterNode;
 import org.springframework.data.mongodb.core.query.Criteria;
 
-import java.util.Set;
-
 public class RegexMongoValueAssertion implements MongoPropertyAssertion {
-    private final String regexPattern;
-    private final Set<Character> options;
+    private final RegexFilterNode node;
 
-    public RegexMongoValueAssertion(String regexPattern, Set<Character> options) {
-        this.regexPattern = regexPattern;
-        this.options = options;
+    public RegexMongoValueAssertion(RegexFilterNode node) {
+        this.node = node;
     }
 
 
     @Override
     public void accept(Criteria criteria) {
         var sb = new StringBuilder();
-        options.forEach(sb::append);
+        node.getOptions().forEach(sb::append);
         var optionsString = sb.toString();
-        criteria.regex(regexPattern, optionsString.isBlank() ? null : optionsString);
+
+        if (node.isNegated()) {
+            criteria.not()
+                .regex(node.getRegexPattern(), optionsString.isBlank() ? null : optionsString);
+        } else {
+            criteria.regex(node.getRegexPattern(), optionsString.isBlank() ? null : optionsString);
+        }
     }
 }

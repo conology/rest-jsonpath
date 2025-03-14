@@ -48,7 +48,7 @@ fragment HEX: [0-9a-fA-F];
 
 WILDCARD_SELECTOR: '*';
 COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
-REGEX_COMPARISON_OPERATOR: '=~';
+REGEX_COMPARISON_OPERATOR: '=~' | '!~';
 REGULAR_EXPRESSION: '/' (~[/\r\n] | '\\/' )+ '/' [gimscxdtu]*;
 SAFE_IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
 ESCAPESEQUENCE: '\\' (["\\/bfnrt] | UNICODE);

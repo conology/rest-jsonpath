@@ -3,6 +3,7 @@ package io.github.conology.jsonpath.core;
 import io.github.conology.jsonpath.core.ast.*;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -258,20 +259,34 @@ public class JsonPathCompilerPass {
         guardParserException(ctx);
 
         if (ctx.REGULAR_EXPRESSION() != null) {
-            var expression = ctx.REGULAR_EXPRESSION().getText();
-            var matcher = REGEX_PATTERN.matcher(expression);
-            if (!matcher.matches()) {
-                throw failParserLexerMismatch();
-            }
-            var pattern = matcher.group(1);
-            var options = matcher.group(2)
-                .chars()
-                .mapToObj(c -> (char) c)
-                .collect(Collectors.toSet());
-            return new RegexFilterNode(queryNode, pattern, options);
+            return transformRegexComparison(queryNode, ctx.REGEX_COMPARISON_OPERATOR(), ctx.REGULAR_EXPRESSION());
         }
 
         throw failParserLexerMismatch();
+    }
+
+    private static RegexFilterNode transformRegexComparison(
+        RelativeQueryNode queryNode,
+        TerminalNode operator,
+        TerminalNode regex
+    ) {
+        var isNegated = switch (operator.getText()) {
+            case "=~" -> false;
+            case "!~" -> true;
+            case null, default -> throw failParserLexerMismatch();
+        };
+
+        var expression = regex.getText();
+        var matcher = REGEX_PATTERN.matcher(expression);
+        if (!matcher.matches()) {
+            throw failParserLexerMismatch();
+        }
+        var pattern = matcher.group(1);
+        var options = matcher.group(2)
+            .chars()
+            .mapToObj(c -> (char) c)
+            .collect(Collectors.toSet());
+        return new RegexFilterNode(queryNode, pattern, options, isNegated);
     }
 
     private static void collectPropertySelectorPath(

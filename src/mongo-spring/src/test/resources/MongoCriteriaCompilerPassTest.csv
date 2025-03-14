@@ -14,6 +14,7 @@ name =~ /^(charles|darwin|\/\\\$)$/misx,"{""name"": {""$regularExpression"": {""
 name =~ /\/\$\\\//,"{""name"": {""$regularExpression"": {""pattern"": ""\\/\\$\\\\\\/"", ""options"": """"}}}",,
 name =~ /foo/b,!error,,invalid regex option
 name =~ //,!error,,empty regex
+name !~ /foo/,"{""name"": {""$not"": {""$regularExpression"": {""pattern"": ""foo"", ""options"": """"}}}}",,
 stores.books[*].name,"{""stores.books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"wildcard works only on arrays, not on objects. wildcard is not required"
 stores[?@.books[*].name],"{""stores"": {""$elemMatch"": {""books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 store.books[0].name,"{""store.books.0.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,

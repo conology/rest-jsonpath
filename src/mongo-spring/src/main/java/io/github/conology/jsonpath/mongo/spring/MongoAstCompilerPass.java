@@ -47,10 +47,7 @@ public class MongoAstCompilerPass {
         };
     }
     private MongoPropertyTest compilePropertyTest(RegexFilterNode node) {
-        var assertion = new RegexMongoValueAssertion(
-            node.getRegexPattern(),
-            node.getOptions()
-        );
+        var assertion = new RegexMongoValueAssertion(node);
         return new NestedValueTestCompiler(
             node.getRelativeQueryNode(),
             this,
