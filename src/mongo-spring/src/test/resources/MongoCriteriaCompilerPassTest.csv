@@ -26,7 +26,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!error,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
-"name == """"charles"""" || name == """"darwin""""",,,
+"name == """"charles"""" || name == """"darwin""""",,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "books[?@.title == ""chuck"" || @.title == ""norris""]",,,
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',,,
@@ -42,4 +42,4 @@ flag == false,,,
 owner == null,,,Better use existence query
 name == $.name,,,we don't support any lookup across different collection entries. no absolute queries allowed
 "name == ""\""\r\t\\""",,,
-,,,
+"status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"

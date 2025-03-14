@@ -18,7 +18,7 @@ public class MongoAstCompilerPass {
         this.existenceAssertion = existenceAssertion;
     }
 
-    public MongoTestNode compile() {
+    public MongoTestNode transformTestNode() {
         return compileTestNode(ir);
     }
 

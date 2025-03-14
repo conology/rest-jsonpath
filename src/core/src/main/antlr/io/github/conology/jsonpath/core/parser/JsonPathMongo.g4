@@ -4,7 +4,8 @@ grammar JsonPathMongo;
 package io.github.conology.jsonpath.core.parser;
 }
 
-restQuery: restAndQuery EOF;
+restQueries: restQuery (',' restQuery)* EOF;
+restQuery: restAndQuery;
 restOrQuery: restAndQuery ( '||' restAndQuery)* ;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
 restBasicQuery: restExistenceQuery | restComparisonQuery | restRegexQuery;

@@ -1,25 +1,28 @@
 package io.github.conology.jsonpath.core;
 
 import io.github.conology.jsonpath.core.ast.*;
-import io.github.conology.jsonpath.core.parser.JsonPathMongoLexer;
 import io.github.conology.jsonpath.core.parser.JsonPathMongoParser;
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.BufferedTokenStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JsonPathCompilerPass {
 
-    public static PropertyFilterNode parseRestQuery(String input) {
-        var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
-        var parser = new JsonPathMongoParser(new BufferedTokenStream(lexer));
-        parser.setErrorHandler(new BailErrorStrategy());
+    public List<PropertyFilterNode> getQueries(JsonPathMongoParser parser) {
+        return transformRestQueries(parser.restQueries());
+    }
 
-        return new JsonPathCompilerPass().transform(parser.restQuery());
+    private List<PropertyFilterNode> transformRestQueries(
+        JsonPathMongoParser.RestQueriesContext ctx
+    ) {
+        guardParserException(ctx);
+
+        return ctx.restQuery().stream()
+            .map(this::transform)
+            .toList();
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
