@@ -1,0 +1,29 @@
+name: Publish package to the Maven Central Repository
+on:
+  release:
+    types: [published]
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Get release version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          # Remove the "v" prefix, if it exists
+          LIB_VERSION=${VERSION#v}
+          echo "Release version: $LIB_VERSION"
+          echo "LIB_VERSION=$LIB_VERSION" >> $GITHUB_ENV
+      - name: Publish
+        run: ./gradlew -Pversion=$LIB_VERSION publishToCentralPortal
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingPrivateKey: ${{ secrets.GPG_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_SIGING_PASSPHRASE }}
