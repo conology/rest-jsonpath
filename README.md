@@ -41,7 +41,7 @@ Important! We don't translate jsonpath, but collection filter
 
 We don't aim to select fields or embedded documents. We only aim to query collections.
 
-### Querying
+### Examples
 Assume a collection of stores
 ```json
 [
