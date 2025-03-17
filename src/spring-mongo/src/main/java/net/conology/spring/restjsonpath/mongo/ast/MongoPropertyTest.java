@@ -7,14 +7,25 @@ public final class MongoPropertyTest implements MongoTestNode {
     private final MongoPropertySelector propertySelector;
     private final MongoPropertyAssertion assertion;
 
-    public MongoPropertyTest(MongoPropertySelector propertySelector, MongoPropertyAssertion assertion) {
+    public MongoPropertyTest(
+        MongoPropertySelector propertySelector,
+        MongoPropertyAssertion assertion
+    ) {
         this.propertySelector = propertySelector;
         this.assertion = assertion;
     }
 
+    public MongoPropertySelector getPropertySelector() {
+        return propertySelector;
+    }
+
+    public MongoPropertyAssertion getAssertion() {
+        return assertion;
+    }
+
     @Override
-    public void visit(Criteria parentCritera) {
-        var childCritera = propertySelector.selectIn(parentCritera);
-        assertion.accept(childCritera);
+    public void visit(Criteria parentCriteria) {
+        var childCritera = propertySelector.selectIn(parentCriteria);
+        assertion.apply(childCritera);
     }
 }

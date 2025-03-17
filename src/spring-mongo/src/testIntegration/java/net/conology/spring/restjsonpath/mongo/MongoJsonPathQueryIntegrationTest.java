@@ -39,6 +39,8 @@ class MongoJsonPathQueryIntegrationTest {
     @Container
     @ServiceConnection
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7");
+    private final JsonPathCriteriaCompiler compiler =
+        new JsonPathCriteriaCompilerBuilder().build();
 
     @Autowired
     ObjectMapper objectMapper;
@@ -75,7 +77,7 @@ class MongoJsonPathQueryIntegrationTest {
     }
 
     private List<Store> executeQuery(String restQuery) {
-        var criteria = new JsonPathToCriteriaCompiler().compile(restQuery);
+        var criteria = compiler.compile(restQuery);
 
         return mongoTemplate.find(
             query(criteria),

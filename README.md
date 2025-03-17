@@ -25,8 +25,9 @@ implementation("net.conology.spring:rest-jsonpath-mongodb:{version}")
 Compile and execute your query
 
 ```java
-var query = "books[?@.author.firstName == \"Charles\" && @.author.lastName == \"Darwin\"]";
-Criteria criteria = new JsonPathToCriteriaCompiler().compile(query);
+String query = "books[?@.author.firstName == \"Charles\" && @.author.lastName == \"Darwin\"]";
+JsonPathCriteriaCompiler compiler = new JsonPathCriteriaCompilerBuilder().build();
+Criteria criteria = compiler.compile(query);
 List<Store> matches = mongoTemplate.find(query(criteria),Store.class);
 ```
 

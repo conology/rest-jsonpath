@@ -2,16 +2,27 @@ package net.conology.spring.restjsonpath.mongo.ast;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import java.util.List;
+
 public final class MongoFieldSelector implements MongoPropertySelector {
 
-    private final String path;
+    private final List<String> path;
+    private String normalizedPath;
 
-    public MongoFieldSelector(String path) {
+    public MongoFieldSelector(
+        List<String> path
+    ) {
         this.path = path;
     }
 
     @Override
     public Criteria selectIn(Criteria parent) {
-        return parent.and(path);
+        var pathString = String.join(".", path);
+        return parent.and(pathString);
+    }
+
+    @Override
+    public String getFieldName() {
+        return path.isEmpty() ? "" : path.getLast();
     }
 }

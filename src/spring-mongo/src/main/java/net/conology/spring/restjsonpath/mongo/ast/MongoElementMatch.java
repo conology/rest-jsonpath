@@ -17,7 +17,7 @@ public final class MongoElementMatch implements MongoPropertyAssertion {
     }
 
     @Override
-    public void accept(Criteria criteria) {
+    public void apply(Criteria criteria) {
         var elemMatch = new Criteria();
         for (MongoTestNode propertyTest : propertyTests) {
             propertyTest.visit(elemMatch);

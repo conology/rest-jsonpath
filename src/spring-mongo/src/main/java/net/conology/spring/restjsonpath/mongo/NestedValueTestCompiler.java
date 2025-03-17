@@ -5,17 +5,17 @@ import net.conology.restjsonpath.PeekingIterator;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ast.*;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class NestedValueTestCompiler {
 
     private final RelativeQueryNode relativeQueryNode;
-    private final MongoAstCompilerPass parent;
+    private final MongoIrCompilerPass parent;
     private final MongoPropertyAssertion finalAssertion;
 
     public NestedValueTestCompiler(
         RelativeQueryNode relativeQueryNode,
-        MongoAstCompilerPass parent,
+        MongoIrCompilerPass parent,
         MongoPropertyAssertion finalAssertion
     ) {
         this.relativeQueryNode = relativeQueryNode;
@@ -66,7 +66,7 @@ public class NestedValueTestCompiler {
     }
 
     private MongoFieldSelector compileSelector(PeekingIterator<SelectorNode> nodes) {
-        var path = new LinkedList<String>();
+        var path = new ArrayList<String>();
 
         while (nodes.hasNext()) {
             var next = nodes.peek();
@@ -89,13 +89,13 @@ public class NestedValueTestCompiler {
             }
         }
 
-        return new MongoFieldSelector(parent.normalizePath(path));
+        return new MongoFieldSelector(path);
     }
 
     private MongoElementMatch compileElementMatch(
         PeekingIterator<SelectorNode> nodes
     ) {
-        var propertyTests = new LinkedList<MongoTestNode>();
+        var propertyTests = new ArrayList<MongoTestNode>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
             if (next instanceof PropertyFilterNode filterNode) {

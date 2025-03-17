@@ -3,18 +3,24 @@ package net.conology.spring.restjsonpath.mongo.ast;
 import net.conology.restjsonpath.ast.ComparisonOperator;
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import java.util.function.UnaryOperator;
+
 public class MongoValueComparingAssertion implements MongoValueAssertion {
 
     private final ComparisonOperator operator;
-    private final Object value;
+    private Object value;
 
     public MongoValueComparingAssertion(ComparisonOperator operator, Object value) {
         this.operator = operator;
         this.value = value;
     }
 
+    public void updateValue(UnaryOperator<Object> updater) {
+        value = updater.apply(value);
+    }
+
     @Override
-    public void accept(Criteria criteria) {
+    public void apply(Criteria criteria) {
         switch (operator) {
             case EQ -> criteria.is(value);
             case NEQ -> criteria.ne(value);

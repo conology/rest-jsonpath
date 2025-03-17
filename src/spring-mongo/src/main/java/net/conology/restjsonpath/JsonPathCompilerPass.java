@@ -5,7 +5,7 @@ import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -190,7 +190,7 @@ public class JsonPathCompilerPass {
         String startField,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
-        var path = new LinkedList<String>();
+        var path = new ArrayList<String>();
         path.add(startField);
         collectPropertySelectorPath(path, segments);
         return new FieldSelectorNode(path, relativeQuery);
@@ -290,7 +290,7 @@ public class JsonPathCompilerPass {
     }
 
     private static void collectPropertySelectorPath(
-        LinkedList<String> path,
+        ArrayList<String> path,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         while (segments.hasNext()) {

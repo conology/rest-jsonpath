@@ -1,5 +1,6 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.TestInstantiationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -49,6 +50,9 @@ class MongoCriteriaCompilerPassTest {
     }
 
     private static Criteria compile(String input) {
-        return new JsonPathToCriteriaCompiler().compile(input);
+        return new JsonPathCriteriaCompilerBuilder()
+            .addMongoTestNodeVisitor(new DateTimePropertyMapper("born"))
+            .build()
+            .compile(input);
     }
 }

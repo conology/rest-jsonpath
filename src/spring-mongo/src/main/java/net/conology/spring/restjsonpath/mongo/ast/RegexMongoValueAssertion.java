@@ -12,7 +12,7 @@ public class RegexMongoValueAssertion implements MongoPropertyAssertion {
 
 
     @Override
-    public void accept(Criteria criteria) {
+    public void apply(Criteria criteria) {
         var sb = new StringBuilder();
         node.getOptions().forEach(sb::append);
         var optionsString = sb.toString();

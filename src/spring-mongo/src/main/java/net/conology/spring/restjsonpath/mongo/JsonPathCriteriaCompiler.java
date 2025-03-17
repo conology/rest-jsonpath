@@ -1,37 +1,31 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import net.conology.restjsonpath.IrVisitor;
 import net.conology.restjsonpath.JsonPathCompilerPass;
 import net.conology.restjsonpath.ast.PropertyFilterNode;
 import net.conology.restjsonpath.core.parser.JsonPathMongoLexer;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
-import net.conology.spring.restjsonpath.mongo.ast.MongoDelegatingValueAssertion;
 import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import java.util.List;
 import java.util.function.Consumer;
 
-public class JsonPathToCriteriaCompiler {
+public class JsonPathCriteriaCompiler {
 
-    private final MongoAstCompilerPass.Builder mongoAstCompilerPassBuilder;
+    private final MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder;
+    private final List<IrVisitor<MongoTestNode>> mongoIrVisitors;
     private final Consumer<JsonPathMongoParser> parserConfigurer;
 
-    public JsonPathToCriteriaCompiler(
-        MongoAstCompilerPass.Builder mongoAstCompilerPassBuilder,
-        Consumer<JsonPathMongoParser> parserConfigurer
+    public JsonPathCriteriaCompiler(
+        Consumer<JsonPathMongoParser> parserConfigurer, MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
+        List<IrVisitor<MongoTestNode>> mongoIrVisitors
     ) {
-        this.mongoAstCompilerPassBuilder = mongoAstCompilerPassBuilder;
+        this.mongoIrCompilerPassBuilder = mongoIrCompilerPassBuilder;
+        this.mongoIrVisitors = mongoIrVisitors;
         this.parserConfigurer = parserConfigurer;
-    }
-
-    public JsonPathToCriteriaCompiler() {
-        this(
-            new MongoAstCompilerPass.Builder()
-                .existenceAssertion(MongoDelegatingValueAssertion.createDefaultExistenceAssertion()),
-            parser -> parser.setErrorHandler(new BailErrorStrategy())
-        );
     }
 
     public Criteria compile(String input) {
@@ -62,7 +56,14 @@ public class JsonPathToCriteriaCompiler {
     }
 
     private MongoTestNode toMongoIr(PropertyFilterNode filterNode) {
-        return mongoAstCompilerPassBuilder
-            .build(filterNode).transformTestNode();
+        var ir = mongoIrCompilerPassBuilder
+            .build(filterNode)
+            .transformTestNode();
+
+        for (var visitor : mongoIrVisitors) {
+            visitor.accept(ir);
+        }
+
+        return ir;
     }
 }

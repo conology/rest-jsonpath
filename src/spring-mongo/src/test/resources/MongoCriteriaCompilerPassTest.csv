@@ -36,7 +36,7 @@ books[?(@.title)],,,
 "[?(@.title==""book""))]",,,
 !@.owner,,,
 "!(@.owner==""steve"")",,,
-created.gte == 12345,,$[?@.created >= 12345],
+created.$gte == 12345,,$[?@.created >= 12345],
 books[?@.created > 1234 || @.created < 3244],,,
 firstName == lastName,,$[?@.firstName == @.lastName],
 flag == false,,,
@@ -44,3 +44,4 @@ owner == null,,,Better use existence query
 name == $.name,,,we don't support any lookup across different collection entries. no absolute queries allowed
 "name == ""\""\r\t\\""",,,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
+"born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields

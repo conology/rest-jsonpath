@@ -12,6 +12,10 @@ public final class MongoAllOfTestNode implements MongoTestNode {
         this.tests = tests;
     }
 
+    public List<MongoPropertyTest> getTests() {
+        return tests;
+    }
+
     @Override
     public void visit(Criteria parentCritera) {
         tests.forEach(test -> test.visit(parentCritera));

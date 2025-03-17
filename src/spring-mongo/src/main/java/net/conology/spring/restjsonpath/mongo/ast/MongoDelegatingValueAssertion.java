@@ -13,7 +13,7 @@ public class MongoDelegatingValueAssertion implements MongoValueAssertion {
     }
 
     @Override
-    public void accept(Criteria criteria) {
+    public void apply(Criteria criteria) {
         strategy.accept(criteria);
     }
 

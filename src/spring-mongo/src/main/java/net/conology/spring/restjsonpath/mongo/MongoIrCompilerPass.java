@@ -3,14 +3,12 @@ package net.conology.spring.restjsonpath.mongo;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ast.*;
 
-import java.util.List;
-
-public class MongoAstCompilerPass {
+public class MongoIrCompilerPass {
 
     private final PropertyFilterNode ir;
     private final MongoValueAssertion existenceAssertion;
 
-    public MongoAstCompilerPass(
+    public MongoIrCompilerPass(
         PropertyFilterNode ir,
         MongoValueAssertion existenceAssertion
     ) {
@@ -48,19 +46,11 @@ public class MongoAstCompilerPass {
     }
     private MongoPropertyTest compilePropertyTest(RegexFilterNode node) {
         var assertion = new RegexMongoValueAssertion(node);
-        return new NestedValueTestCompiler(
-            node.getRelativeQueryNode(),
-            this,
-            assertion
-        ).compile();
+        return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
     private MongoPropertyTest compilePropertyTest(ExistenceFilterNode node) {
-        return new NestedValueTestCompiler(
-            node.getRelativeQueryNode(),
-            this,
-            null
-        ).compile();
+        return compilePropertyTest(node.getRelativeQueryNode(), null);
     }
 
     private MongoPropertyTest compilePropertyTest(RelativeValueComparingNode node) {
@@ -68,16 +58,15 @@ public class MongoAstCompilerPass {
             node.getOperator(),
             node.getValueNode().getValue()
         );
+        return compilePropertyTest(node.getRelativeQueryNode(), assertion);
+    }
+
+    private MongoPropertyTest compilePropertyTest(RelativeQueryNode queryNode, MongoPropertyAssertion assertion) {
         return new NestedValueTestCompiler(
-            node.getRelativeQueryNode(),
+            queryNode,
             this,
             assertion
         ).compile();
-    }
-
-
-    public String normalizePath(List<String> path) {
-        return String.join(".", path);
     }
 
     public MongoValueAssertion getExistenceAssertion() {
@@ -87,8 +76,8 @@ public class MongoAstCompilerPass {
     public static class Builder {
         private MongoValueAssertion existenceAssertion;
 
-        public MongoAstCompilerPass build(PropertyFilterNode ir) {
-            return new MongoAstCompilerPass(
+        public MongoIrCompilerPass build(PropertyFilterNode ir) {
+            return new MongoIrCompilerPass(
                 ir,
                 existenceAssertion != null ?
                     existenceAssertion
