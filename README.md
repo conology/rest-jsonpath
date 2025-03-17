@@ -70,8 +70,8 @@ Multiple or connected queries can be provided comma-separated as well.\
 `firstName == "Stark",lastName == "Tony"`
 
 
-You can check our currently supported query translation in
-[this csv](./src/spring-mongo/src/test/resources/MongoCriteriaCompilerPassTest.csv).
+You can check our currently supported query translation 
+[in this csv](./src/spring-mongo/src/test/resources/MongoCriteriaCompilerPassTest.csv).
 
 ### Limitations
 - No nested or-Support

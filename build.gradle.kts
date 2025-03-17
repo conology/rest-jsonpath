@@ -70,7 +70,7 @@ subprojects {
                                 developer {
                                     id.set("goatfryed")
                                     name.set("Omar Sood")
-                                    email.set("goatfryed@gmail.com")
+                                    email.set("omar.sood@holos-supply.de")
                                 }
                             }
 

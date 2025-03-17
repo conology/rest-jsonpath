@@ -24,24 +24,10 @@ publishing {
     publications {
         create<MavenPublication>("lib") {
             artifactId = "rest-jsonpath-mongodb"
-            description = "Translate jsonpath filter queries to mongodb queries"
 
-            // Remove the inlined dependency from pom
-
-            pom.withXml {
-                val pomNode = asNode()
-                val dependenciesNode = pomNode.get("dependencies") as? Node ?: return@withXml
-
-                dependenciesNode.children()
-                    .filterIsInstance<Node>()
-                    .forEach { dependency ->
-                        val groupId = dependency.get("groupId") as? Node
-                        val artifactId = dependency.get("artifactId") as? Node
-
-                        if (groupId?.text() == "net.conology" && artifactId?.text() == "core") {
-                            dependenciesNode.remove(dependency)
-                        }
-                    }
+            pom {
+                name = "Jsonpath rest filter for spring+mongodb"
+                description = "Translate jsonpath rest filter queries to mongodb queries"
             }
         }
     }
