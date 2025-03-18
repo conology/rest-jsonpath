@@ -12,8 +12,8 @@ field == 34,"{""field"": 34}",,
 price == 13.55,,,
 name =~ /^(charles|darwin|\/\\\$)$/misx,"{""name"": {""$regularExpression"": {""pattern"": ""^(charles|darwin|\\/\\\\\\$)$"", ""options"": ""imsx""}}}",,
 name =~ /\/\$\\\//,"{""name"": {""$regularExpression"": {""pattern"": ""\\/\\$\\\\\\/"", ""options"": """"}}}",,
-name =~ /foo/b,!error,,invalid regex option
-name =~ //,!error,,empty regex
+name =~ /foo/b,!invalidQuery,,invalid regex option
+name =~ //,!invalidQuery,,empty regex
 name !~ /foo/,"{""name"": {""$not"": {""$regularExpression"": {""pattern"": ""foo"", ""options"": """"}}}}",,
 stores.books[*].name,"{""stores.books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"wildcard works only on arrays, not on objects. wildcard is not required"
 stores[?@.books[*].name],"{""stores"": {""$elemMatch"": {""books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
@@ -25,7 +25,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.authors[?@.name==""Darwin""]]","{""books"": {""$elemMatch"": {""authors"": {""$elemMatch"": {""name"": ""Darwin""}}}}}",,
 "books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""author"": ""chuck"", ""title"": ""norris""}}}",,
 "externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
-"books[?@.author == ""chuck""][?@.author == ""norris""]",!error,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
+"books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "books[?@.title == ""chuck"" || @.title == ""norris""]",,,
@@ -42,9 +42,14 @@ firstName == lastName,,$[?@.firstName == @.lastName],
 flag == false,,,
 owner == null,,,Better use existence query
 name == $.name,,,we don't support any lookup across different collection entries. no absolute queries allowed
-"name == ""\""\r\t\\""",,,
+"text == ""\""\r\t\\""",,,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
 "born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields
 age >= 123 && age <= 3445,"{""age"": {""$gte"": 123, ""$lte"": 3445}}",,
 "author.lastName == ""Darwin"" && author.firstName == ""Charles""","{""author.lastName"": ""Darwin"", ""author.firstName"": ""Charles""}",,
-"author == ""Charles"" && author == ""Darwin""",!error,,
+"author == ""Charles"" && author == ""Darwin""",!invalidQuery,,
+test[invalid,!invalidQuery,,
+"@.firstName == ""charles"" && @.lastName == ""darwin""",,,
+"test[""@type""]","{""test.atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
+"book[""year created""]","{""book.year created"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"Mongo allows spaces and other special chars in the fields, so no special handling required"
+"book["".comment""]","{""book..comment"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,No special error detection at the moment. This won't return the desired result

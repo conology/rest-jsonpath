@@ -3,10 +3,9 @@ package net.conology.spring.restjsonpath.mongo;
 
 import net.conology.restjsonpath.PeekingIterator;
 import net.conology.restjsonpath.ast.*;
-import net.conology.spring.restjsonpath.mongo.ast.*;
+import net.conology.spring.restjsonpath.mongo.ir.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class NestedValueTestCompiler {
 
@@ -24,10 +23,10 @@ public class NestedValueTestCompiler {
         this.finalAssertion = finalAssertion;
     }
 
-    public MongoPropertyTest compile() {
+    public MongoPropertyCondition compile() {
         var nodes = PeekingIterator.of(relativeQueryNode.getSelectorNodes().iterator());
 
-        MongoPropertyTest head = null;
+        MongoPropertyCondition head = null;
         MongoElementMatch tail = null;
 
         while (nodes.hasNext()) {
@@ -54,13 +53,13 @@ public class NestedValueTestCompiler {
         return head;
     }
 
-    private MongoPropertyTest createTest(MongoFieldSelector fieldSelector, MongoElementMatch elementMatch) {
+    private MongoPropertyCondition createTest(MongoFieldSelector fieldSelector, MongoElementMatch elementMatch) {
         var assertion =
             elementMatch != null ? elementMatch
             : ( finalAssertion != null ? finalAssertion
                 : parent.getExistenceAssertion()
             );
-        return new MongoPropertyTest(
+        return new MongoPropertyCondition(
             fieldSelector,
             assertion
         );
@@ -75,6 +74,10 @@ public class NestedValueTestCompiler {
                 case SelectorNode.Constant.WILDCARD -> true;
                 case IndexSelectorNode indexSelectorNode -> {
                     path.add(Integer.toString(indexSelectorNode.getIndex()));
+                    yield true;
+                }
+                case UnsafeFieldSelector it -> {
+                    path.add(it.getFieldName());
                     yield true;
                 }
                 case FieldSelectorNode fieldSelectorNode -> {
@@ -96,21 +99,21 @@ public class NestedValueTestCompiler {
     private MongoElementMatch compileElementMatch(
         PeekingIterator<SelectorNode> nodes
     ) {
-        var propertyTests = new ArrayList<MongoPropertyTest>();
+        var propertyTests = new ArrayList<MongoPropertyCondition>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
             if (next instanceof PropertyFilterNode filterNode) {
                 nodes.next();
                 var testNode = parent.compileTestNode(filterNode);
                 switch (testNode) {
-                    case MongoAllOfTestNode allOf -> propertyTests.addAll(allOf.getTests());
-                    case MongoPropertyTest propertyTest -> propertyTests.add(propertyTest);
+                    case MongoAllOfSelector allOf -> propertyTests.addAll(allOf.getTests());
+                    case MongoPropertyCondition propertyTest -> propertyTests.add(propertyTest);
                 }
             } else {
                 break;
             }
         }
         return propertyTests.isEmpty() ? null
-            : new MongoElementMatch(new MongoAllOfTestNode(propertyTests));
+            : new MongoElementMatch(new MongoAllOfSelector(propertyTests));
     }
 }

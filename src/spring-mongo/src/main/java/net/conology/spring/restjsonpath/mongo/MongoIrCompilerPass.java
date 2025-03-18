@@ -1,7 +1,7 @@
 package net.conology.spring.restjsonpath.mongo;
 
 import net.conology.restjsonpath.ast.*;
-import net.conology.spring.restjsonpath.mongo.ast.*;
+import net.conology.spring.restjsonpath.mongo.ir.*;
 
 public class MongoIrCompilerPass {
 
@@ -16,26 +16,26 @@ public class MongoIrCompilerPass {
         this.existenceAssertion = existenceAssertion;
     }
 
-    public MongoTestNode transformTestNode() {
+    public MongoSelector transformTestNode() {
         return compileTestNode(ir);
     }
 
-    public MongoTestNode compileTestNode(PropertyFilterNode filterNode) {
+    public MongoSelector compileTestNode(PropertyFilterNode filterNode) {
         if (filterNode instanceof AndFilterNode andNode) {
             return compileAllOfTest(andNode);
         }
         return compilePropertyTest(filterNode);
     }
 
-    private MongoTestNode compileAllOfTest(AndFilterNode andNode) {
-        return new MongoAllOfTestNode(
+    private MongoSelector compileAllOfTest(AndFilterNode andNode) {
+        return new MongoAllOfSelector(
             andNode.getNodes().stream()
                 .map(this::compilePropertyTest)
                 .toList()
         );
     }
 
-    public MongoPropertyTest compilePropertyTest(PropertyFilterNode filterNode) {
+    public MongoPropertyCondition compilePropertyTest(PropertyFilterNode filterNode) {
         return switch (filterNode) {
             case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
@@ -44,16 +44,16 @@ public class MongoIrCompilerPass {
                 throw new IllegalArgumentException("nested and expressions are not supported");
         };
     }
-    private MongoPropertyTest compilePropertyTest(RegexFilterNode node) {
+    private MongoPropertyCondition compilePropertyTest(RegexFilterNode node) {
         var assertion = new RegexMongoValueAssertion(node);
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoPropertyTest compilePropertyTest(ExistenceFilterNode node) {
+    private MongoPropertyCondition compilePropertyTest(ExistenceFilterNode node) {
         return compilePropertyTest(node.getRelativeQueryNode(), null);
     }
 
-    private MongoPropertyTest compilePropertyTest(RelativeValueComparingNode node) {
+    private MongoPropertyCondition compilePropertyTest(RelativeValueComparingNode node) {
         var assertion = new MongoValueComparingAssertion(
             node.getOperator(),
             node.getValueNode().getValue()
@@ -61,7 +61,7 @@ public class MongoIrCompilerPass {
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoPropertyTest compilePropertyTest(RelativeQueryNode queryNode, MongoPropertyAssertion assertion) {
+    private MongoPropertyCondition compilePropertyTest(RelativeQueryNode queryNode, MongoPropertyAssertion assertion) {
         return new NestedValueTestCompiler(
             queryNode,
             this,

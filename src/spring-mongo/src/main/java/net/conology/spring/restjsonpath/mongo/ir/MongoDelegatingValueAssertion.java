@@ -1,4 +1,4 @@
-package net.conology.spring.restjsonpath.mongo.ast;
+package net.conology.spring.restjsonpath.mongo.ir;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 

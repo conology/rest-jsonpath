@@ -73,6 +73,35 @@ Multiple or connected queries can be provided comma-separated as well.\
 You can check our currently supported query translation 
 [in this csv](./src/spring-mongo/src/test/resources/MongoCriteriaCompilerPassTest.csv).
 
+### Customization
+Translation between jsonpath and database requires some special concerns.
+This can include special field handling, naming differences and more.
+
+#### DateTime
+DateTime fields require special treatment and must be configured.
+```java
+var compiler = new JsonPathCriteriaCompilerBuilder()
+    .mongoSelectorPostProcessor(new SimpleDateTimePropertyMapper("created","updated"))
+    .build();
+```
+
+#### Field name mappings
+```java
+var compiler = new JsonPathCriteriaCompilerBuilder()
+    .mongoSelectorPostProcessor(
+        new SimpleFieldNameMapper(
+            Map.of(
+                "@type", "atType",
+                "original city", "originalCity"
+            )
+        )
+    ).build();
+```
+
+#### Advanced
+Check out the implementation of the provided post processors for inspiration
+on more complex use cases.
+
 ### Limitations
 - No nested or-Support
 

@@ -1,13 +1,13 @@
-package net.conology.spring.restjsonpath.mongo.ast;
+package net.conology.spring.restjsonpath.mongo.ir;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
-public final class MongoPropertyTest implements MongoTestNode {
+public final class MongoPropertyCondition implements MongoSelector {
 
     private final MongoFieldSelector propertySelector;
     private final MongoPropertyAssertion assertion;
 
-    public MongoPropertyTest(
+    public MongoPropertyCondition(
         MongoFieldSelector propertySelector,
         MongoPropertyAssertion assertion
     ) {

@@ -6,7 +6,6 @@ package net.conology.restjsonpath.core.parser;
 
 restQueries: restQuery (',' restQuery)* EOF;
 restQuery: restAndQuery;
-restOrQuery: restAndQuery ( '||' restAndQuery)* ;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
 restBasicQuery: restExistenceQuery | restComparisonQuery | restRegexQuery;
 restExistenceQuery: restShortRelativeQuery | relativeQuery;
@@ -19,13 +18,13 @@ restRegexQuery: relativeQuery REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
 restShortRelativeQuery: restMemberSelector segment*;
 restMemberSelector: SAFE_IDENTIFIER;
 
+relativeQuery: '@' segment+;
 segment:
 	memberNameShortHand
 	| bracketedExpression
 	;
-
 memberNameShortHand: '.' SAFE_IDENTIFIER;
-bracketedExpression: '[' (filterSelector|WILDCARD_SELECTOR|INT) ']';
+bracketedExpression: '[' (QUOTED_TEXT|filterSelector|WILDCARD_SELECTOR|INT) ']';
 filterSelector: '?' andExpression;
 andExpression: logicalExpression ( '&&' logicalExpression)*;
 logicalExpression: comparisonExpression | existenceExpression;
@@ -38,7 +37,6 @@ comparisonExpression:
 regexComparison: REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
 literal: INT | QUOTED_TEXT;
 comparisonOperator: COMPARISON_OPERATOR;
-relativeQuery: '@' segment+;
 
 fragment QUOTED_SAFECODEPOINT: ~[["\\\u0000-\u001F];
 fragment UNICODE: 'u' HEX HEX HEX HEX;

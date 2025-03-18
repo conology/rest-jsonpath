@@ -1,9 +1,9 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import net.conology.restjsonpath.IrVisitor;
-import net.conology.spring.restjsonpath.mongo.ast.MongoDelegatingValueAssertion;
-import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
-import net.conology.spring.restjsonpath.mongo.ast.MongoValueAssertion;
+import net.conology.restjsonpath.PostProcessor;
+import net.conology.spring.restjsonpath.mongo.ir.MongoDelegatingValueAssertion;
+import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
+import net.conology.spring.restjsonpath.mongo.ir.MongoValueAssertion;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.BailErrorStrategy;
 
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class JsonPathCriteriaCompilerBuilder {
 
     private MongoValueAssertion existenceAssertion;
-    private List<IrVisitor<MongoTestNode>> mongoIrVisitors;
+    private List<PostProcessor<MongoSelector>> mongoPostProcessors;
 
     private Consumer<JsonPathMongoParser> parserConfigurer = parser -> parser.setErrorHandler(new BailErrorStrategy());
 
@@ -29,11 +29,11 @@ public class JsonPathCriteriaCompilerBuilder {
         return this;
     }
 
-    public JsonPathCriteriaCompilerBuilder addMongoTestNodeVisitor(IrVisitor<MongoTestNode> testVisitor) {
-        if (mongoIrVisitors == null) {
-            mongoIrVisitors = new ArrayList<>();
+    public JsonPathCriteriaCompilerBuilder mongoSelectorPostProcessor(PostProcessor<MongoSelector> postProcessor) {
+        if (mongoPostProcessors == null) {
+            mongoPostProcessors = new ArrayList<>();
         }
-        mongoIrVisitors.add(testVisitor);
+        mongoPostProcessors.add(postProcessor);
         return this;
     }
 
@@ -46,7 +46,7 @@ public class JsonPathCriteriaCompilerBuilder {
 
         return new JsonPathCriteriaCompiler(
             parserConfigurer, mongoIrCompilerPassBuilder,
-            mongoIrVisitors
+            mongoPostProcessors
         );
     }
 
@@ -59,8 +59,8 @@ public class JsonPathCriteriaCompilerBuilder {
               parser.setErrorHandler(new BailErrorStrategy());
             };
         }
-        if (mongoIrVisitors == null) {
-            mongoIrVisitors = Collections.emptyList();
+        if (mongoPostProcessors == null) {
+            mongoPostProcessors = Collections.emptyList();
         }
     }
 }

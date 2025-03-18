@@ -1,5 +1,5 @@
 package net.conology.restjsonpath;
 
-public interface IrVisitor<T> {
+public interface PostProcessor<T> {
     void accept(T ast);
 }
