@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,11 +62,17 @@ public class JsonPathCompilerPass {
     }
 
     private ExistenceFilterNode transform(JsonPathMongoParser.RestExistenceQueryContext ctx) {
-        var relativeQueryNode = transformRelativeQuery(ctx);
-        return new ExistenceFilterNode(relativeQueryNode);
+        guardParserException(ctx);
+
+        if (ctx.restRelativeQuery() != null) {
+            var queryNode = transformRelativeQuery(ctx.restRelativeQuery());
+            return new ExistenceFilterNode(queryNode);
+        }
+
+        throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestExistenceQueryContext ctx) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restShortRelativeQuery() != null) {
@@ -206,10 +211,11 @@ public class JsonPathCompilerPass {
     private PropertyFilterNode transformComparison(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
-        if (ctx.restShortRelativeQuery() == null) {
+        if (ctx.restRelativeQuery() == null) {
             throw failParserLexerMismatch();
         }
-        var leftNode = transformRelativeQuery(ctx.restShortRelativeQuery());
+
+        var leftNode = transformRelativeQuery(ctx.restRelativeQuery());
 
         if (ctx.regexComparison() != null) {
             return transformRegexComparison(leftNode, ctx.regexComparison());

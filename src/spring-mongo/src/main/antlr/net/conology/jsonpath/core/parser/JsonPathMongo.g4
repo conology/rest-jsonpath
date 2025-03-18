@@ -7,14 +7,14 @@ package net.conology.restjsonpath.core.parser;
 restQueries: restQuery (',' restQuery)* EOF;
 restQuery: restAndQuery;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
-restBasicQuery: restExistenceQuery | restComparisonQuery | restRegexQuery;
-restExistenceQuery: restShortRelativeQuery | relativeQuery;
+restBasicQuery: restExistenceQuery | restComparisonQuery;
+restExistenceQuery: restRelativeQuery;
 restComparisonQuery:
-    restShortRelativeQuery comparisonOperator literal
-    | restShortRelativeQuery regexComparison
-    | literal comparisonOperator restShortRelativeQuery
+    restRelativeQuery comparisonOperator literal
+    | literal comparisonOperator restRelativeQuery
+    | restRelativeQuery regexComparison
     ;
-restRegexQuery: relativeQuery REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
+restRelativeQuery: restShortRelativeQuery | relativeQuery;
 restShortRelativeQuery: restMemberSelector segment*;
 restMemberSelector: SAFE_IDENTIFIER;
 
@@ -31,8 +31,8 @@ logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:
     relativeQuery comparisonOperator literal
-    | relativeQuery regexComparison
     | literal comparisonOperator relativeQuery
+    | relativeQuery regexComparison
     ;
 regexComparison: REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
 literal: INT | QUOTED_TEXT;
