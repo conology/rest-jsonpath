@@ -55,6 +55,6 @@ test[invalid,!invalidQuery,,
 "book["".comment""]","{""book..comment"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,No special error detection at the moment. This won't return the desired result
 "[""store""]","{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "@.store.title == ""Amazing""","{""store.title"": ""Amazing""}",,
-[?@.title],,,
+[?@.title],!invalidQuery:root query must always start with a property selection,,
 [0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,

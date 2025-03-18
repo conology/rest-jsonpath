@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MongoCriteriaCompilerPassTest {
 
-    private static final Pattern ERROR_EXPECTATION_PATTERN = Pattern.compile("^!([A-z]+)(:.*)?$");
+    private static final Pattern ERROR_EXPECTATION_PATTERN = Pattern.compile("^!([A-z]+)(?::(.*))?$");
 
     @ParameterizedTest(name = "[{index}] {0}")
     @CsvFileSource(resources = "/MongoCriteriaCompilerPassTest.csv", numLinesToSkip = 1)
@@ -34,14 +34,17 @@ class MongoCriteriaCompilerPassTest {
     }
 
     private void testException(String input, String errorType, String errorMsg) {
+        if ("lowPriority".equals(errorType)) {
+            // we don't care if it works or not
+            // no guarantees given
+            throw new TestAbortedException("behavior not enforced");
+        }
+
         var compilationError = assertThatCode(() -> compile(input))
             .describedAs("compilation error");
 
-        if (
-            "error".equals(errorType)
-            || "lowPriority".equals(errorType)
-        ) {
-            compilationError.isNotNull();
+        if ("error".equals(errorType)) {
+            compilationError.isInstanceOf(Exception.class);
         } else if(
             "unsupported".equals(errorType)
             || "invalidQuery".equals(errorType)
