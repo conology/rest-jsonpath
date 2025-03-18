@@ -6,6 +6,7 @@ import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ast.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class NestedValueTestCompiler {
 
@@ -95,17 +96,21 @@ public class NestedValueTestCompiler {
     private MongoElementMatch compileElementMatch(
         PeekingIterator<SelectorNode> nodes
     ) {
-        var propertyTests = new ArrayList<MongoTestNode>();
+        var propertyTests = new ArrayList<MongoPropertyTest>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
             if (next instanceof PropertyFilterNode filterNode) {
                 nodes.next();
-                propertyTests.add(parent.compileTestNode(filterNode));
+                var testNode = parent.compileTestNode(filterNode);
+                switch (testNode) {
+                    case MongoAllOfTestNode allOf -> propertyTests.addAll(allOf.getTests());
+                    case MongoPropertyTest propertyTest -> propertyTests.add(propertyTest);
+                }
             } else {
                 break;
             }
         }
         return propertyTests.isEmpty() ? null
-            : new MongoElementMatch(propertyTests);
+            : new MongoElementMatch(new MongoAllOfTestNode(propertyTests));
     }
 }

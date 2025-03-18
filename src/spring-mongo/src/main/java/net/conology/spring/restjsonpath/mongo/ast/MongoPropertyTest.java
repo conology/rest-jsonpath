@@ -4,18 +4,18 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 public final class MongoPropertyTest implements MongoTestNode {
 
-    private final MongoPropertySelector propertySelector;
+    private final MongoFieldSelector propertySelector;
     private final MongoPropertyAssertion assertion;
 
     public MongoPropertyTest(
-        MongoPropertySelector propertySelector,
+        MongoFieldSelector propertySelector,
         MongoPropertyAssertion assertion
     ) {
         this.propertySelector = propertySelector;
         this.assertion = assertion;
     }
 
-    public MongoPropertySelector getPropertySelector() {
+    public MongoFieldSelector getPropertySelector() {
         return propertySelector;
     }
 
@@ -24,8 +24,9 @@ public final class MongoPropertyTest implements MongoTestNode {
     }
 
     @Override
-    public void visit(Criteria parentCriteria) {
-        var childCritera = propertySelector.selectIn(parentCriteria);
-        assertion.apply(childCritera);
+    public Criteria asCriteria() {
+        var criteria = new Criteria(propertySelector.getPathString());
+        assertion.apply(criteria);
+        return criteria;
     }
 }

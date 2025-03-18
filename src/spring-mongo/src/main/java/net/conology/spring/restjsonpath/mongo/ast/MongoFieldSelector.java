@@ -1,13 +1,10 @@
 package net.conology.spring.restjsonpath.mongo.ast;
 
-import org.springframework.data.mongodb.core.query.Criteria;
-
 import java.util.List;
 
-public final class MongoFieldSelector implements MongoPropertySelector {
+public final class MongoFieldSelector {
 
     private final List<String> path;
-    private String normalizedPath;
 
     public MongoFieldSelector(
         List<String> path
@@ -15,13 +12,10 @@ public final class MongoFieldSelector implements MongoPropertySelector {
         this.path = path;
     }
 
-    @Override
-    public Criteria selectIn(Criteria parent) {
-        var pathString = String.join(".", path);
-        return parent.and(pathString);
+    public String getPathString() {
+        return String.join(".", path);
     }
 
-    @Override
     public String getFieldName() {
         return path.isEmpty() ? "" : path.getLast();
     }
