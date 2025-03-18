@@ -27,29 +27,34 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
-"name == """"charles"""" || name == """"darwin""""",,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
-"books[?@.title == ""chuck"" || @.title == ""norris""]",,,
+"name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
+"books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
-store == 'The Book Haven',,,
+store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]",,"$[?@.[""@type""]]",
-books[?(@.title)],,,
-"[?(@.title==""book""))]",,,
+books[?(@.title)],,,we don't support expressions atm that would require parenthesis
+"[?(@.title==""book"")]",,,
 !@.owner,,,
 "!(@.owner==""steve"")",,,
 created.$gte == 12345,,$[?@.created >= 12345],
 books[?@.created > 1234 || @.created < 3244],,,
-firstName == lastName,,$[?@.firstName == @.lastName],
+firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comparison between fields not planned atm
 flag == false,,,
 owner == null,,,Better use existence query
-name == $.name,,,we don't support any lookup across different collection entries. no absolute queries allowed
-"text == ""\""\r\t\\""",,,
+name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
+"escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
 "born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields
 age >= 123 && age <= 3445,"{""age"": {""$gte"": 123, ""$lte"": 3445}}",,
 "author.lastName == ""Darwin"" && author.firstName == ""Charles""","{""author.lastName"": ""Darwin"", ""author.firstName"": ""Charles""}",,
 "author == ""Charles"" && author == ""Darwin""",!invalidQuery,,
 test[invalid,!invalidQuery,,
-"@.firstName == ""charles"" && @.lastName == ""darwin""",,,
+"@.firstName == ""charles"" && @.lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "test[""@type""]","{""test.atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "book[""year created""]","{""book.year created"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"Mongo allows spaces and other special chars in the fields, so no special handling required"
 "book["".comment""]","{""book..comment"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,No special error detection at the moment. This won't return the desired result
+"[""store""]","{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
+"@.store.title == ""Amazing""","{""store.title"": ""Amazing""}",,
+[?@.title],!invalidQuery:root query must always start with a property selection,,
+[0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
+"books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,

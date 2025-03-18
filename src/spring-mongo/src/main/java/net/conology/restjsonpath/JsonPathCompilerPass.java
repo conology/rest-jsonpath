@@ -4,9 +4,9 @@ import net.conology.restjsonpath.ast.*;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,15 +63,21 @@ public class JsonPathCompilerPass {
     }
 
     private ExistenceFilterNode transform(JsonPathMongoParser.RestExistenceQueryContext ctx) {
-        var relativeQueryNode = transformRelativeQuery(ctx);
-        return new ExistenceFilterNode(relativeQueryNode);
-    }
-
-    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestExistenceQueryContext ctx) {
         guardParserException(ctx);
 
-        if (ctx.restShortRelativeQuery() != null) {
-            return transformRelativeQuery(ctx.restShortRelativeQuery());
+        if (ctx.restRelativeQuery() != null) {
+            var queryNode = transformRelativeQuery(ctx.restRelativeQuery());
+            return new ExistenceFilterNode(queryNode);
+        }
+
+        throw failParserLexerMismatch();
+    }
+
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestRelativeQueryContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.simplifiedRelativeQuery() != null) {
+            return transformRelativeQuery(ctx.simplifiedRelativeQuery());
         }
 
         if (ctx.relativeQuery() != null) {
@@ -81,22 +87,30 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestShortRelativeQueryContext ctx) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.SimplifiedRelativeQueryContext ctx) {
         guardParserException(ctx);
-
-        if (ctx.restMemberSelector() == null) {
-            throw new AssertionError("Unexpected parser state. RestMemberSelector required");
-        }
 
         var segments = PeekingIterator.of(ctx.segment().iterator());
 
+        var startSelector = transformRelativeQueryStartSelector(ctx, segments);
         var relativeQuery = new RelativeQueryNode();
-        var propertySelector = transformPropertySelector(relativeQuery, ctx.restMemberSelector(), segments);
-        relativeQuery.addNode(propertySelector);
+        relativeQuery.addNode(startSelector);
 
         collectSelectorNodes(relativeQuery, segments);
 
         return relativeQuery;
+    }
+
+    private SelectorNode transformRelativeQueryStartSelector(JsonPathMongoParser.SimplifiedRelativeQueryContext ctx, PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
+        if (ctx.memberNameShortHand() != null) {
+            return transformPropertySelector(ctx.memberNameShortHand(), segments);
+        }
+
+        if (ctx.bracketedExpression() != null) {
+            return transformSelectorNode(ctx.bracketedExpression());
+        }
+
+        throw failParserLexerMismatch();
     }
 
     private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RelativeQueryContext ctx) {
@@ -118,7 +132,6 @@ public class JsonPathCompilerPass {
 
             if (next.memberNameShortHand() != null) {
                 var propertySelector = transformPropertySelector(
-                    relativeQuery,
                     next.memberNameShortHand(),
                     segments
                 );
@@ -128,7 +141,8 @@ public class JsonPathCompilerPass {
 
             if (next.bracketedExpression() != null) {
                 var bracketedExpression = next.bracketedExpression();
-                transformBracketedExpression(relativeQuery, bracketedExpression);
+                var selectorNode = transformSelectorNode(bracketedExpression);
+                relativeQuery.addNode(selectorNode);
                 continue;
             }
 
@@ -137,79 +151,65 @@ public class JsonPathCompilerPass {
         }
     }
 
-    private void transformBracketedExpression(RelativeQueryNode relativeQuery, JsonPathMongoParser.BracketedExpressionContext bracketedExpression) {
-        guardParserException(bracketedExpression);
+    private SelectorNode transformSelectorNode(
+        JsonPathMongoParser.BracketedExpressionContext ctx
+    ) {
+        guardParserException(ctx);
 
-        if (bracketedExpression.filterSelector() != null) {
-            var filterExpression = transform(bracketedExpression.filterSelector());
-            relativeQuery.addNode(filterExpression);
-            return;
+        if (ctx.filterSelector() != null) {
+            return transform(ctx.filterSelector());
         }
 
-        if (bracketedExpression.WILDCARD_SELECTOR() != null) {
-            relativeQuery.addNode(SelectorNode.Constant.WILDCARD);
-            return;
+        if (ctx.WILDCARD_SELECTOR() != null) {
+            return SelectorNode.Constant.WILDCARD;
         }
 
-        if (bracketedExpression.INT() != null) {
-            var index = Integer.parseInt(bracketedExpression.INT().getText());
-            relativeQuery.addNode(new IndexSelectorNode(index));
-            return;
+        if (ctx.INT() != null) {
+            var index = Integer.parseInt(ctx.INT().getText());
+            return new IndexSelectorNode(index);
         }
 
-        if (bracketedExpression.QUOTED_TEXT() != null) {
-            var fieldName = processQuotedText(bracketedExpression.QUOTED_TEXT().getText());
-            relativeQuery.addNode(new UnsafeFieldSelector(fieldName));
-            return;
+        if (ctx.QUOTED_TEXT() != null) {
+            return transformUnsafeFieldSelector(ctx.QUOTED_TEXT());
         }
 
         throw failParserLexerMismatch();
     }
 
+    private UnsafeFieldSelector transformUnsafeFieldSelector(TerminalNode quotedText) {
+        var fieldName = processQuotedText(quotedText.getText());
+        return new UnsafeFieldSelector(fieldName);
+    }
+
     private FieldSelectorNode transformPropertySelector(
-        RelativeQueryNode relativeQuery,
         JsonPathMongoParser.MemberNameShortHandContext ctx,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         guardParserException(ctx);
         return transformPropertySelector(
-            relativeQuery,
             ctx.SAFE_IDENTIFIER().getText(),
             segments
         );
     }
 
     private FieldSelectorNode transformPropertySelector(
-        RelativeQueryNode relativeQuery,
-        JsonPathMongoParser.RestMemberSelectorContext ctx,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
-        guardParserException(ctx);
-        return transformPropertySelector(
-            relativeQuery,
-            ctx.SAFE_IDENTIFIER().getText(),
-            segments
-        );
-    }
-
-    private FieldSelectorNode transformPropertySelector(
-        RelativeQueryNode relativeQuery,
         String startField,
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         var path = new ArrayList<String>();
         path.add(startField);
         collectPropertySelectorPath(path, segments);
-        return new FieldSelectorNode(path, relativeQuery);
+        return new FieldSelectorNode(path);
     }
 
     private PropertyFilterNode transformComparison(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
-        if (ctx.restShortRelativeQuery() == null) {
+        if (ctx.restRelativeQuery() == null) {
             throw failParserLexerMismatch();
         }
-        var leftNode = transformRelativeQuery(ctx.restShortRelativeQuery());
+
+        var leftNode = transformRelativeQuery(ctx.restRelativeQuery());
 
         if (ctx.regexComparison() != null) {
             return transformRegexComparison(leftNode, ctx.regexComparison());
@@ -378,10 +378,10 @@ public class JsonPathCompilerPass {
         return new ValueNode(literal.INT().getText());
     }
 
-    private String processQuotedText(String terminalNode) {
-        return terminalNode
-            .substring(1, terminalNode.length() - 1) // strip the quotes
-        ;
+    private String processQuotedText(String quotedText) {
+        var inner = quotedText.substring(1, quotedText.length() - 1);
+
+        return StringEscapeUtils.unescapeJson(inner);
     }
 
 

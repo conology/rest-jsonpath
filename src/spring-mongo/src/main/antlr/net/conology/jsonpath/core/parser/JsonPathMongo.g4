@@ -7,23 +7,22 @@ package net.conology.restjsonpath.core.parser;
 restQueries: restQuery (',' restQuery)* EOF;
 restQuery: restAndQuery;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
-restBasicQuery: restExistenceQuery | restComparisonQuery | restRegexQuery;
-restExistenceQuery: restShortRelativeQuery | relativeQuery;
+restBasicQuery: restExistenceQuery | restComparisonQuery;
+restExistenceQuery: restRelativeQuery;
 restComparisonQuery:
-    restShortRelativeQuery comparisonOperator literal
-    | restShortRelativeQuery regexComparison
-    | literal comparisonOperator restShortRelativeQuery
+    restRelativeQuery comparisonOperator literal
+    | literal comparisonOperator restRelativeQuery
+    | restRelativeQuery regexComparison
     ;
-restRegexQuery: relativeQuery REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
-restShortRelativeQuery: restMemberSelector segment*;
-restMemberSelector: SAFE_IDENTIFIER;
+restRelativeQuery: simplifiedRelativeQuery | relativeQuery;
+simplifiedRelativeQuery: (memberNameShortHand|bracketedExpression) segment*;
 
-relativeQuery: '@' segment+;
+relativeQuery: CURRENT_NODE_IDENTIFIER segment+;
 segment:
-	memberNameShortHand
+	'.' memberNameShortHand
 	| bracketedExpression
 	;
-memberNameShortHand: '.' SAFE_IDENTIFIER;
+memberNameShortHand: SAFE_IDENTIFIER;
 bracketedExpression: '[' (QUOTED_TEXT|filterSelector|WILDCARD_SELECTOR|INT) ']';
 filterSelector: '?' andExpression;
 andExpression: logicalExpression ( '&&' logicalExpression)*;
@@ -31,8 +30,8 @@ logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;
 comparisonExpression:
     relativeQuery comparisonOperator literal
-    | relativeQuery regexComparison
     | literal comparisonOperator relativeQuery
+    | relativeQuery regexComparison
     ;
 regexComparison: REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
 literal: INT | QUOTED_TEXT;
@@ -43,7 +42,7 @@ fragment UNICODE: 'u' HEX HEX HEX HEX;
 
 fragment HEX: [0-9a-fA-F];
 
-
+CURRENT_NODE_IDENTIFIER: '@';
 WILDCARD_SELECTOR: '*';
 COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
 REGEX_COMPARISON_OPERATOR: '=~' | '!~';

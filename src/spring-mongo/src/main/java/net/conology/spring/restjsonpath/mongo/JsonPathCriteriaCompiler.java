@@ -6,6 +6,9 @@ import net.conology.restjsonpath.JsonPathCompilerPass;
 import net.conology.restjsonpath.ast.PropertyFilterNode;
 import net.conology.restjsonpath.core.parser.JsonPathMongoLexer;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
+import net.conology.spring.restjsonpath.mongo.ir.MongoAllOfSelector;
+import net.conology.spring.restjsonpath.mongo.ir.MongoElementMatch;
+import net.conology.spring.restjsonpath.mongo.ir.MongoPropertyCondition;
 import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -65,6 +68,7 @@ public class JsonPathCriteriaCompiler {
     }
 
     private MongoSelector toMongoIr(PropertyFilterNode filterNode) {
+
         var ir = mongoIrCompilerPassBuilder
             .build(filterNode)
             .transformTestNode();
@@ -73,6 +77,25 @@ public class JsonPathCriteriaCompiler {
             visitor.accept(ir);
         }
 
+        guardInvalidTopLevelQuery(ir);
+
         return ir;
+    }
+
+    private void guardInvalidTopLevelQuery(MongoSelector ir) {
+        switch (ir) {
+            case MongoAllOfSelector allOf -> guardInvalidTopLevelQuery(allOf);
+            case MongoPropertyCondition condition -> guardInvalidTopLevelQuery(condition);
+        }
+    }
+
+    private void guardInvalidTopLevelQuery(MongoAllOfSelector allOf) {
+        allOf.getTests().forEach(this::guardInvalidTopLevelQuery);
+    }
+
+    private void guardInvalidTopLevelQuery(MongoPropertyCondition condition) {
+        if (condition.getPropertySelector().getPath().isEmpty()) {
+            throw new InvalidQueryException("root query must always start with a property selection");
+        }
     }
 }

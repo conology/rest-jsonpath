@@ -12,6 +12,7 @@ group = "net.conology.spring"
 dependencies {
     antlr("org.antlr:antlr4:4.13.2")
     implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("org.apache.commons:commons-text:1.13.0")
     implementation("org.springframework.data:spring-data-mongodb:4.4.2")
 }
 
