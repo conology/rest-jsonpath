@@ -1,19 +1,19 @@
-package net.conology.spring.restjsonpath.mongo.ast;
+package net.conology.spring.restjsonpath.mongo.ir;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.HashMap;
 import java.util.List;
 
-public final class MongoAllOfTestNode implements MongoTestNode {
+public final class MongoAllOfSelector implements MongoSelector {
 
-    private final List<MongoPropertyTest> tests;
+    private final List<MongoPropertyCondition> tests;
 
-    public MongoAllOfTestNode(List<MongoPropertyTest> tests) {
+    public MongoAllOfSelector(List<MongoPropertyCondition> tests) {
         this.tests = tests;
     }
 
-    public List<MongoPropertyTest> getTests() {
+    public List<MongoPropertyCondition> getTests() {
         return tests;
     }
 
@@ -29,7 +29,7 @@ public final class MongoAllOfTestNode implements MongoTestNode {
         }
     }
 
-    public void addTest(MongoPropertyTest test) {
+    public void addTest(MongoPropertyCondition test) {
         tests.add(test);
     }
 

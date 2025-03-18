@@ -1,4 +1,4 @@
-package net.conology.spring.restjsonpath.mongo.ast;
+package net.conology.spring.restjsonpath.mongo.ir;
 
 import net.conology.restjsonpath.ast.ComparisonOperator;
 import org.springframework.data.mongodb.core.query.Criteria;

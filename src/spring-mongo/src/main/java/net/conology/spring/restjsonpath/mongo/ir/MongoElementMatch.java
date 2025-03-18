@@ -1,16 +1,16 @@
-package net.conology.spring.restjsonpath.mongo.ast;
+package net.conology.spring.restjsonpath.mongo.ir;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
 public final class MongoElementMatch implements MongoPropertyAssertion {
 
-    private final MongoAllOfTestNode propertyTests;
+    private final MongoAllOfSelector propertyTests;
 
-    public MongoElementMatch(MongoAllOfTestNode propertyTests) {
+    public MongoElementMatch(MongoAllOfSelector propertyTests) {
         this.propertyTests = propertyTests;
     }
 
-    public void addTest(MongoPropertyTest test) {
+    public void addTest(MongoPropertyCondition test) {
         propertyTests.addTest(test);
     }
 

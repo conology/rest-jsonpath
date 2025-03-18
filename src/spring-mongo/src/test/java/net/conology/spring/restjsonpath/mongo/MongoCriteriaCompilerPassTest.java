@@ -1,7 +1,8 @@
 package net.conology.spring.restjsonpath.mongo;
 
 import net.conology.restjsonpath.InvalidQueryException;
-import org.junit.jupiter.api.Test;
+import net.conology.spring.restjsonpath.mongo.postprocessor.SimpleDateTimePropertyMapper;
+import net.conology.spring.restjsonpath.mongo.postprocessor.SimpleFieldNameMapper;
 import org.junit.jupiter.api.extension.TestInstantiationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -56,7 +57,8 @@ class MongoCriteriaCompilerPassTest {
 
     private static Criteria compile(String input) {
         return new JsonPathCriteriaCompilerBuilder()
-            .addMongoTestNodeVisitor(new DateTimePropertyMapper("born"))
+            .mongoSelectorPostProcessor(new SimpleDateTimePropertyMapper("born"))
+            .mongoSelectorPostProcessor(new SimpleFieldNameMapper("@type", "atType"))
             .build()
             .compile(input);
     }

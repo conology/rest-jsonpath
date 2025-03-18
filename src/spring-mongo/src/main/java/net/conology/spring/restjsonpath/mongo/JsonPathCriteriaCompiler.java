@@ -1,12 +1,12 @@
 package net.conology.spring.restjsonpath.mongo;
 
 import net.conology.restjsonpath.InvalidQueryException;
-import net.conology.restjsonpath.IrVisitor;
+import net.conology.restjsonpath.PostProcessor;
 import net.conology.restjsonpath.JsonPathCompilerPass;
 import net.conology.restjsonpath.ast.PropertyFilterNode;
 import net.conology.restjsonpath.core.parser.JsonPathMongoLexer;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
-import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
+import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.springframework.data.mongodb.InvalidMongoDbApiUsageException;
@@ -18,15 +18,15 @@ import java.util.function.Consumer;
 public class JsonPathCriteriaCompiler {
 
     private final MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder;
-    private final List<IrVisitor<MongoTestNode>> mongoIrVisitors;
+    private final List<PostProcessor<MongoSelector>> mongoPostProcessors;
     private final Consumer<JsonPathMongoParser> parserConfigurer;
 
     public JsonPathCriteriaCompiler(
         Consumer<JsonPathMongoParser> parserConfigurer, MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
-        List<IrVisitor<MongoTestNode>> mongoIrVisitors
+        List<PostProcessor<MongoSelector>> mongoPostProcessors
     ) {
         this.mongoIrCompilerPassBuilder = mongoIrCompilerPassBuilder;
-        this.mongoIrVisitors = mongoIrVisitors;
+        this.mongoPostProcessors = mongoPostProcessors;
         this.parserConfigurer = parserConfigurer;
     }
 
@@ -54,7 +54,7 @@ public class JsonPathCriteriaCompiler {
 
         var queries = jsonPathIr.stream()
             .map(this::toMongoIr)
-            .map(MongoTestNode::asCriteria)
+            .map(MongoSelector::asCriteria)
             .toList();
 
         if (queries.size() == 1) {
@@ -64,12 +64,12 @@ public class JsonPathCriteriaCompiler {
         return new Criteria().orOperator(queries);
     }
 
-    private MongoTestNode toMongoIr(PropertyFilterNode filterNode) {
+    private MongoSelector toMongoIr(PropertyFilterNode filterNode) {
         var ir = mongoIrCompilerPassBuilder
             .build(filterNode)
             .transformTestNode();
 
-        for (var visitor : mongoIrVisitors) {
+        for (var visitor : mongoPostProcessors) {
             visitor.accept(ir);
         }
 
