@@ -4,6 +4,7 @@ import net.conology.restjsonpath.ast.*;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -377,10 +378,10 @@ public class JsonPathCompilerPass {
         return new ValueNode(literal.INT().getText());
     }
 
-    private String processQuotedText(String terminalNode) {
-        return terminalNode
-            .substring(1, terminalNode.length() - 1) // strip the quotes
-        ;
+    private String processQuotedText(String quotedText) {
+        var inner = quotedText.substring(1, quotedText.length() - 1);
+
+        return StringEscapeUtils.unescapeJson(inner);
     }
 
 

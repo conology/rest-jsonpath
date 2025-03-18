@@ -42,7 +42,7 @@ firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comp
 flag == false,,,
 owner == null,,,Better use existence query
 name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
-"text == ""\""\r\t\\""",,,
+"escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
 "born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields
 age >= 123 && age <= 3445,"{""age"": {""$gte"": 123, ""$lte"": 3445}}",,
