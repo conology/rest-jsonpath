@@ -1,5 +1,6 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import net.conology.restjsonpath.InvalidQueryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.TestInstantiationException;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +40,10 @@ class MongoCriteriaCompilerPassTest {
             if (errorMsg != null) {
                 thatActual.hasMessageContaining(errorMsg);
             }
+        } else if("invalidQuery".equals(errorType)){
+            assertThatCode(() -> compile(input))
+                .describedAs("compilation error")
+                .isInstanceOf(InvalidQueryException.class);
         } else {
             throw new TestInstantiationException("error test of type %s not defined".formatted(errorType));
         }

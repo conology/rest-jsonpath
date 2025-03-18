@@ -1,5 +1,6 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import net.conology.restjsonpath.InvalidQueryException;
 import net.conology.restjsonpath.IrVisitor;
 import net.conology.restjsonpath.JsonPathCompilerPass;
 import net.conology.restjsonpath.ast.PropertyFilterNode;
@@ -8,6 +9,8 @@ import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.springframework.data.mongodb.InvalidMongoDbApiUsageException;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.List;
@@ -29,6 +32,20 @@ public class JsonPathCriteriaCompiler {
     }
 
     public Criteria compile(String input) {
+        try {
+            return compileUnsafe(input);
+        } catch (AssertionError error){
+            throw error;
+        } catch (
+            IllegalStateException
+            | InvalidMongoDbApiUsageException
+            cause
+        ) {
+            throw new InvalidQueryException(cause);
+        }
+    }
+
+    private Criteria compileUnsafe(String input) {
         var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
         var tokens = new BufferedTokenStream(lexer);
         var parser = new JsonPathMongoParser(tokens);
