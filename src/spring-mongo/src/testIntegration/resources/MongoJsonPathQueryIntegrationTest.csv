@@ -3,4 +3,3 @@ owner.nickname,Downtown Bookstore,
 "books[?@.title==""The Great Adventure""]",Downtown Bookstore,
 "owner.contacts[?@.type==""secondMail"" && @.value==""alice@bookhaven.com""]",,todo
 "[""@type""] == ""independent""",Downtown Bookstore,todo
-[?@.title],Käse,
