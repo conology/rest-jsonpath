@@ -41,7 +41,10 @@ class MongoCriteriaCompilerPassTest {
             if (errorMsg != null) {
                 thatActual.hasMessageContaining(errorMsg);
             }
-        } else if("invalidQuery".equals(errorType)){
+        } else if(
+            "unsupported".equals(errorType)
+            || "invalidQuery".equals(errorType)
+        ){
             assertThatCode(() -> compile(input))
                 .describedAs("compilation error")
                 .isInstanceOf(InvalidQueryException.class);
