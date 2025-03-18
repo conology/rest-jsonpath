@@ -6,7 +6,6 @@ import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ast.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class NestedValueTestCompiler {
 
@@ -75,6 +74,10 @@ public class NestedValueTestCompiler {
                 case SelectorNode.Constant.WILDCARD -> true;
                 case IndexSelectorNode indexSelectorNode -> {
                     path.add(Integer.toString(indexSelectorNode.getIndex()));
+                    yield true;
+                }
+                case UnsafeFieldSelector it -> {
+                    path.add(it.getFieldName());
                     yield true;
                 }
                 case FieldSelectorNode fieldSelectorNode -> {

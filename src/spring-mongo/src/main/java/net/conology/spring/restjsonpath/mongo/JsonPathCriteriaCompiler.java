@@ -9,7 +9,6 @@ import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.springframework.data.mongodb.InvalidMongoDbApiUsageException;
 import org.springframework.data.mongodb.core.query.Criteria;
 

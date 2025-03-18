@@ -1,9 +1,7 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import com.mongodb.BasicDBObject;
 import net.conology.spring.restjsonpath.mongo.ast.MongoPropertyTest;
 import net.conology.spring.restjsonpath.mongo.ast.MongoValueComparingAssertion;
-import org.bson.Document;
 
 import java.time.Instant;
 import java.util.*;

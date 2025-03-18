@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -153,6 +154,12 @@ public class JsonPathCompilerPass {
         if (bracketedExpression.INT() != null) {
             var index = Integer.parseInt(bracketedExpression.INT().getText());
             relativeQuery.addNode(new IndexSelectorNode(index));
+            return;
+        }
+
+        if (bracketedExpression.QUOTED_TEXT() != null) {
+            var fieldName = processQuotedText(bracketedExpression.QUOTED_TEXT().getText());
+            relativeQuery.addNode(new UnsafeFieldSelector(fieldName));
             return;
         }
 

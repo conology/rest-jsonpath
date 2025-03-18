@@ -5,7 +5,7 @@ import net.conology.spring.restjsonpath.mongo.ast.MongoAllOfTestNode;
 import net.conology.spring.restjsonpath.mongo.ast.MongoPropertyTest;
 import net.conology.spring.restjsonpath.mongo.ast.MongoTestNode;
 
-abstract public class AbstractMongoTestVisitor implements IrVisitor<MongoTestNode> {
+public abstract class AbstractMongoTestVisitor implements IrVisitor<MongoTestNode> {
 
     @Override
     public void accept(MongoTestNode ast) {
@@ -16,5 +16,5 @@ abstract public class AbstractMongoTestVisitor implements IrVisitor<MongoTestNod
         }
     }
 
-    abstract public void accept(MongoPropertyTest test);
+    public abstract void accept(MongoPropertyTest test);
 }

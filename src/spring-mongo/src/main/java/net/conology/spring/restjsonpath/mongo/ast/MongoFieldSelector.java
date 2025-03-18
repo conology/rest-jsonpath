@@ -4,7 +4,7 @@ import java.util.List;
 
 public final class MongoFieldSelector {
 
-    private final List<String> path;
+    private List<String> path;
 
     public MongoFieldSelector(
         List<String> path
@@ -18,5 +18,14 @@ public final class MongoFieldSelector {
 
     public String getFieldName() {
         return path.isEmpty() ? "" : path.getLast();
+    }
+
+    public List<String> getPath() {
+        return path;
+    }
+
+    public MongoFieldSelector setPath(List<String> path) {
+        this.path = path;
+        return this;
     }
 }
