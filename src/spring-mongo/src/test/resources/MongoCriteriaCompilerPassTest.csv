@@ -31,7 +31,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.title == ""chuck"" || @.title == ""norris""]",,,
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',,,
-['@type'],,"$[?@.[""@type""]]",
+"[""@type""]",,"$[?@.[""@type""]]",
 books[?(@.title)],,,
 "[?(@.title==""book""))]",,,
 !@.owner,,,
@@ -45,3 +45,6 @@ name == $.name,,,we don't support any lookup across different collection entries
 "name == ""\""\r\t\\""",,,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
 "born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields
+age >= 123 && age <= 3445,"{""age"": {""$gte"": 123, ""$lte"": 3445}}",,
+"author.lastName == ""Darwin"" && author.firstName == ""Charles""","{""author.lastName"": ""Darwin"", ""author.firstName"": ""Charles""}",,
+"author == ""Charles"" && author == ""Darwin""",!error,,

@@ -38,7 +38,7 @@ public class JsonPathCriteriaCompiler {
 
         var queries = jsonPathIr.stream()
             .map(this::toMongoIr)
-            .map(this::toCriteria)
+            .map(MongoTestNode::asCriteria)
             .toList();
 
         if (queries.size() == 1) {
@@ -46,13 +46,6 @@ public class JsonPathCriteriaCompiler {
         }
 
         return new Criteria().orOperator(queries);
-    }
-
-    private Criteria toCriteria(MongoTestNode mongoIr) {
-        var critera = new Criteria();
-        mongoIr.visit(critera);
-
-        return critera;
     }
 
     private MongoTestNode toMongoIr(PropertyFilterNode filterNode) {
