@@ -34,22 +34,25 @@ class MongoCriteriaCompilerPassTest {
     }
 
     private void testException(String input, String errorType, String errorMsg) {
-        if ("error".equals(errorType)) {
-            var thatActual = assertThatCode(() -> compile(input))
-                .describedAs("compilation error")
-                .isNotNull();
-            if (errorMsg != null) {
-                thatActual.hasMessageContaining(errorMsg);
-            }
+        var compilationError = assertThatCode(() -> compile(input))
+            .describedAs("compilation error");
+
+        if (
+            "error".equals(errorType)
+            || "lowPriority".equals(errorType)
+        ) {
+            compilationError.isNotNull();
         } else if(
             "unsupported".equals(errorType)
             || "invalidQuery".equals(errorType)
         ){
-            assertThatCode(() -> compile(input))
-                .describedAs("compilation error")
-                .isInstanceOf(InvalidQueryException.class);
+            compilationError.isInstanceOf(InvalidQueryException.class);
         } else {
             throw new TestInstantiationException("error test of type %s not defined".formatted(errorType));
+        }
+
+        if (errorMsg != null) {
+            compilationError.hasMessageContaining(errorMsg);
         }
     }
 

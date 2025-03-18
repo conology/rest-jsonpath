@@ -30,10 +30,10 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
-store == 'The Book Haven',,,
+store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]",,"$[?@.[""@type""]]",
-books[?(@.title)],,,
-"[?(@.title==""book""))]",,,
+books[?(@.title)],,,we don't support expressions atm that would require parenthesis
+"[?(@.title==""book"")]",,,
 !@.owner,,,
 "!(@.owner==""steve"")",,,
 created.$gte == 12345,,$[?@.created >= 12345],
