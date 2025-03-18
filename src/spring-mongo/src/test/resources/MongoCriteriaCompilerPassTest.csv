@@ -53,7 +53,8 @@ test[invalid,!invalidQuery,,
 "test[""@type""]","{""test.atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "book[""year created""]","{""book.year created"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"Mongo allows spaces and other special chars in the fields, so no special handling required"
 "book["".comment""]","{""book..comment"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,No special error detection at the moment. This won't return the desired result
-"[""store""]",,,
+"[""store""]","{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "@.store.title == ""Amazing""","{""store.title"": ""Amazing""}",,
 [?@.title],,,
-[0],,,
+[0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
+"books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,

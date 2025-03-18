@@ -7,7 +7,7 @@ public final class FieldSelectorNode implements SelectorNode {
     private final List<String> path;
     private RelativeQueryNode context;
 
-    public FieldSelectorNode(List<String> path, RelativeQueryNode relativeQuery) {
+    public FieldSelectorNode(List<String> path) {
         this.path = path;
     }
 
