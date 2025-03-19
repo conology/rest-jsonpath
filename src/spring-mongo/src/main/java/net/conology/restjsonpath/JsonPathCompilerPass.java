@@ -384,6 +384,10 @@ public class JsonPathCompilerPass {
             return new ValueNode(true);
         }
 
+        if (literal.NULL() != null) {
+            return new ValueNode(ValueNode.SPECIAL_VALUE.NULL);
+        }
+
         throw failParserLexerMismatch();
     }
 

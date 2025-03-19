@@ -34,7 +34,7 @@ comparisonExpression:
     | relativeQuery regexComparison
     ;
 regexComparison: REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
-literal: INT | QUOTED_TEXT | TRUE | FALSE;
+literal: INT | QUOTED_TEXT | TRUE | FALSE | NULL;
 comparisonOperator: COMPARISON_OPERATOR;
 
 fragment QUOTED_SAFECODEPOINT: ~[["\\\u0000-\u001F];
@@ -42,6 +42,7 @@ fragment UNICODE: 'u' HEX HEX HEX HEX;
 
 fragment HEX: [0-9a-fA-F];
 
+NULL: 'null';
 FALSE: 'false';
 TRUE: 'true';
 CURRENT_NODE_IDENTIFIER: '@';

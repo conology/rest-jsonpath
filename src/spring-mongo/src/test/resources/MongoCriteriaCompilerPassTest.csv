@@ -13,7 +13,8 @@ price == 13.55,,,
 flag == false,"{""flag"": false}",,
 flag == true,"{""flag"": true}",,
 flag > true,!invalidQuery:Can't apply operator > to value of type Boolean,,
-owner == null,,,Better use existence query
+owner == null,"{""owner"": null}",,Consider existence query instead
+owner != null,"{""owner"": {""$ne"": null}}",,
 name =~ /^(charles|darwin|\/\\\$)$/misx,"{""name"": {""$regularExpression"": {""pattern"": ""^(charles|darwin|\\/\\\\\\$)$"", ""options"": ""imsx""}}}",,
 name =~ /\/\$\\\//,"{""name"": {""$regularExpression"": {""pattern"": ""\\/\\$\\\\\\/"", ""options"": """"}}}",,
 name =~ /foo/b,!invalidQuery,,invalid regex option
@@ -32,6 +33,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
+"name != ""de"" && name != ""morgan""",,,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',!lowPriority,,use double quotes
