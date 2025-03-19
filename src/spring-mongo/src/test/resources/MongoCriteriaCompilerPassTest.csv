@@ -12,6 +12,7 @@ field == 34,"{""field"": 34}",,
 price == 13.55,,,
 flag == false,"{""flag"": false}",,
 flag == true,"{""flag"": true}",,
+flag > true,!invalidQuery:Can't apply operator > to value of type Boolean,,
 owner == null,,,Better use existence query
 name =~ /^(charles|darwin|\/\\\$)$/misx,"{""name"": {""$regularExpression"": {""pattern"": ""^(charles|darwin|\\/\\\\\\$)$"", ""options"": ""imsx""}}}",,
 name =~ /\/\$\\\//,"{""name"": {""$regularExpression"": {""pattern"": ""\\/\\$\\\\\\/"", ""options"": """"}}}",,
