@@ -11,6 +11,10 @@ public final class ValueNode implements ComparableNode {
         this.value = value;
     }
 
+    public ValueNode(boolean value) {
+        this.value = value;
+    }
+
     public Object getValue() {
         return value;
     }

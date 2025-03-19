@@ -260,7 +260,6 @@ public class JsonPathCompilerPass {
 
         return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
     }
-
     private static final Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
     private RegexFilterNode transformRegexComparison(RelativeQueryNode queryNode, JsonPathMongoParser.RegexComparisonContext ctx) {
         guardParserException(ctx);
@@ -368,6 +367,7 @@ public class JsonPathCompilerPass {
 
     private ValueNode transformLiteral(JsonPathMongoParser.LiteralContext literal) {
         guardParserException(literal);
+
         if (literal.INT() != null) {
             var number = Integer.valueOf(literal.INT().getText());
             return new ValueNode(number);
@@ -375,7 +375,12 @@ public class JsonPathCompilerPass {
         if (literal.QUOTED_TEXT() != null) {
             return new ValueNode(processQuotedText(literal.QUOTED_TEXT().getText()));
         }
-        return new ValueNode(literal.INT().getText());
+
+        if (literal.FALSE() != null) {
+            return new ValueNode(false);
+        }
+
+        throw failParserLexerMismatch();
     }
 
     private String processQuotedText(String quotedText) {
