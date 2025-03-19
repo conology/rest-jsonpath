@@ -380,6 +380,10 @@ public class JsonPathCompilerPass {
             return new ValueNode(false);
         }
 
+        if (literal.TRUE() != null) {
+            return new ValueNode(true);
+        }
+
         throw failParserLexerMismatch();
     }
 
