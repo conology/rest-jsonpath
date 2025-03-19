@@ -33,7 +33,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
-"name != ""de"" && name != ""morgan""",,,this is or and or is not supported. consider regex instead
+"name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',!lowPriority,,use double quotes
