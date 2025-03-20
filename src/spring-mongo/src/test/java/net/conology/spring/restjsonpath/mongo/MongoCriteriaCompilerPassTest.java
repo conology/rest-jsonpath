@@ -40,6 +40,11 @@ class MongoCriteriaCompilerPassTest {
             throw new TestAbortedException("behavior not enforced");
         }
 
+        if ("undefined".equals(errorType)) {
+            testTranslatablePath(input, errorMsg);
+            return;
+        }
+
         var compilationError = assertThatCode(() -> compile(input))
             .describedAs("compilation error");
 

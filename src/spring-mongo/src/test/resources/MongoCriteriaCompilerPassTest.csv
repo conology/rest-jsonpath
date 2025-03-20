@@ -10,6 +10,11 @@ field >= 34,"{""field"": {""$gte"": 34}}",,
 field != 34,"{""field"": {""$ne"": 34}}",,
 field == 34,"{""field"": 34}",,
 price == 13.55,,,
+flag == false,"{""flag"": false}",,
+flag == true,"{""flag"": true}",,
+flag > true,!invalidQuery:Can't apply operator > to value of type Boolean,,
+owner == null,"{""owner"": null}",,Consider existence query instead
+owner != null,"{""owner"": {""$ne"": null}}",,
 name =~ /^(charles|darwin|\/\\\$)$/misx,"{""name"": {""$regularExpression"": {""pattern"": ""^(charles|darwin|\\/\\\\\\$)$"", ""options"": ""imsx""}}}",,
 name =~ /\/\$\\\//,"{""name"": {""$regularExpression"": {""pattern"": ""\\/\\$\\\\\\/"", ""options"": """"}}}",,
 name =~ /foo/b,!invalidQuery,,invalid regex option
@@ -28,6 +33,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
+"name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',!lowPriority,,use double quotes
@@ -39,8 +45,6 @@ books[?(@.title)],,,we don't support expressions atm that would require parenthe
 created.$gte == 12345,,$[?@.created >= 12345],
 books[?@.created > 1234 || @.created < 3244],,,
 firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comparison between fields not planned atm
-flag == false,,,
-owner == null,,,Better use existence query
 name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
 "escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"

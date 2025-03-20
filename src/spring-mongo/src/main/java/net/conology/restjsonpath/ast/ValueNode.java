@@ -11,7 +11,26 @@ public final class ValueNode implements ComparableNode {
         this.value = value;
     }
 
+    public ValueNode(boolean value) {
+        this.value = value;
+    }
+
+    public ValueNode(SPECIAL_VALUE value) {
+        this.value = value;
+    }
+
     public Object getValue() {
         return value;
+    }
+
+    public enum SPECIAL_VALUE {
+        NULL("null"),
+        ;
+
+        private final String symbol;
+
+        SPECIAL_VALUE(String symbol) {
+            this.symbol = symbol;
+        }
     }
 }
