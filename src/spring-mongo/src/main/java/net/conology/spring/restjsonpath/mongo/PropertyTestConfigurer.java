@@ -8,7 +8,7 @@ public abstract class PropertyTestConfigurer extends AbstractMongoTestPostProces
 
     @Override
     public void accept(MongoPropertyCondition test) {
-        if (handles(test)) return;
+        if (!handles(test)) return;
 
         configure(test);
     }

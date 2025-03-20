@@ -20,7 +20,7 @@ public class SimpleDateTimePropertyMapper extends DateTimePropertyMapper {
     @Override
     protected boolean handles(MongoPropertyCondition test) {
         var fieldName = test.getPropertySelector().getFieldName();
-        return !dateTimeFields.contains(fieldName);
+        return dateTimeFields.contains(fieldName);
     }
 
 }
