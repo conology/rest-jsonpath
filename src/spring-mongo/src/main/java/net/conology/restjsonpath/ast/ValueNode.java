@@ -7,7 +7,7 @@ public final class ValueNode implements ComparableNode {
         this.value = value;
     }
 
-    public ValueNode(Integer value) {
+    public ValueNode(Number value) {
         this.value = value;
     }
 
