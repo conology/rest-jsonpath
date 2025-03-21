@@ -1,4 +1,4 @@
-# Jsonpath REST Filters
+# JSONPath REST Query
 [![Build Status](https://github.com/conology/rest-jsonpath/actions/workflows/verify.yml/badge.svg)](https://github.com/goatfryed/assert-baseline/actions/workflows/verify.yml)
 
 Enhance your rest collection endpoints with json path compatible filter queries
