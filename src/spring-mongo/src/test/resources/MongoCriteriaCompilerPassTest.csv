@@ -35,7 +35,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
-"agreement[?@.[""@referredType""]==""ServiceContract""]",,,
+"agreement[?@[""@referredType""]==""ServiceContract""]","{""agreement"": {""$elemMatch"": {""@referredType"": ""ServiceContract""}}}",,
 store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]","{""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}","$[?@.[""@type""]]",
 books[?(@.title)],!lowPriority,,we don't support expressions atm that would require parenthesis
