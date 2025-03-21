@@ -1,28 +1,21 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import net.conology.restjsonpath.AstCompilerPass;
+import net.conology.restjsonpath.AstCompilerPassImpl;
 import net.conology.restjsonpath.PostProcessor;
 import net.conology.spring.restjsonpath.mongo.ir.MongoDelegatingValueAssertion;
 import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
 import net.conology.spring.restjsonpath.mongo.ir.MongoValueAssertion;
-import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
-import org.antlr.v4.runtime.BailErrorStrategy;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class JsonPathCriteriaCompilerBuilder {
 
     private MongoValueAssertion existenceAssertion;
     private List<PostProcessor<MongoSelector>> mongoPostProcessors;
-
-    private Consumer<JsonPathMongoParser> parserConfigurer = parser -> parser.setErrorHandler(new BailErrorStrategy());
-
-    public JsonPathCriteriaCompilerBuilder parserConfigurer(Consumer<JsonPathMongoParser> parserConfigurer) {
-        this.parserConfigurer = parserConfigurer;
-        return this;
-    }
+    private AstCompilerPass astCompilerPass;
 
     public JsonPathCriteriaCompilerBuilder existenceAssertion(MongoValueAssertion existenceAssertion) {
         this.existenceAssertion = existenceAssertion;
@@ -37,6 +30,11 @@ public class JsonPathCriteriaCompilerBuilder {
         return this;
     }
 
+    public JsonPathCriteriaCompilerBuilder astCompilerPass(AstCompilerPass astCompilerPass) {
+        this.astCompilerPass = astCompilerPass;
+        return this;
+    }
+
     public JsonPathCriteriaCompiler build() {
         withDefaults();
 
@@ -45,7 +43,8 @@ public class JsonPathCriteriaCompilerBuilder {
                 .existenceAssertion(existenceAssertion);
 
         return new JsonPathCriteriaCompiler(
-            parserConfigurer, mongoIrCompilerPassBuilder,
+            astCompilerPass,
+            mongoIrCompilerPassBuilder,
             mongoPostProcessors
         );
     }
@@ -54,10 +53,8 @@ public class JsonPathCriteriaCompilerBuilder {
         if (existenceAssertion == null) {
             existenceAssertion = MongoDelegatingValueAssertion.createDefaultExistenceAssertion();
         }
-        if (parserConfigurer == null) {
-            parserConfigurer = parser -> {
-              parser.setErrorHandler(new BailErrorStrategy());
-            };
+        if (astCompilerPass == null) {
+            astCompilerPass = new AstCompilerPassImpl();
         }
         if (mongoPostProcessors == null) {
             mongoPostProcessors = Collections.emptyList();

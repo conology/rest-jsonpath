@@ -37,13 +37,13 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
 "agreement[?@.[""@referredType""]==""ServiceContract""]",,,
 store == 'The Book Haven',!lowPriority,,use double quotes
-"[""@type""]",,"$[?@.[""@type""]]",
-books[?(@.title)],,,we don't support expressions atm that would require parenthesis
-"[?(@.title==""book"")]",,,
-!@.owner,,,
-"!(@.owner==""steve"")",,,
-created.$gte == 12345,,$[?@.created >= 12345],
-books[?@.created > 1234 || @.created < 3244],,,
+"[""@type""]","{""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}","$[?@.[""@type""]]",
+books[?(@.title)],!lowPriority,,we don't support expressions atm that would require parenthesis
+"[?(@.title==""book"")]",!lowPriority,,
+!@.owner,!unsupported,,
+"!(@.owner==""steve"")",!unsupported,,
+created.$gte == 12345,!unsupported,$[?@.created >= 12345],"consider PostProcessors, if you want to support special query masks"
+books[?@.created > 1234 || @.created < 3244],!unsupported,,
 firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comparison between fields not planned atm
 name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
 "escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,

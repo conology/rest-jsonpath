@@ -1,13 +1,10 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import net.conology.restjsonpath.InvalidQueryException;
-import net.conology.restjsonpath.PostProcessor;
-import net.conology.restjsonpath.JsonPathCompilerPass;
+import net.conology.restjsonpath.*;
 import net.conology.restjsonpath.ast.PropertyFilterNode;
 import net.conology.restjsonpath.core.parser.JsonPathMongoLexer;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import net.conology.spring.restjsonpath.mongo.ir.MongoAllOfSelector;
-import net.conology.spring.restjsonpath.mongo.ir.MongoElementMatch;
 import net.conology.spring.restjsonpath.mongo.ir.MongoPropertyCondition;
 import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
 import org.antlr.v4.runtime.BufferedTokenStream;
@@ -22,15 +19,18 @@ public class JsonPathCriteriaCompiler {
 
     private final MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder;
     private final List<PostProcessor<MongoSelector>> mongoPostProcessors;
-    private final Consumer<JsonPathMongoParser> parserConfigurer;
+    private final AstCompilerPass astCompilerPass;
+    private final JsonPathCompilerPass jsonPathCompilerPass;
 
     public JsonPathCriteriaCompiler(
-        Consumer<JsonPathMongoParser> parserConfigurer, MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
+        AstCompilerPass astCompilerPass,
+        MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
         List<PostProcessor<MongoSelector>> mongoPostProcessors
     ) {
         this.mongoIrCompilerPassBuilder = mongoIrCompilerPassBuilder;
         this.mongoPostProcessors = mongoPostProcessors;
-        this.parserConfigurer = parserConfigurer;
+        this.astCompilerPass = astCompilerPass;
+        jsonPathCompilerPass = new JsonPathCompilerPass();
     }
 
     public Criteria compile(String input) {
@@ -48,12 +48,8 @@ public class JsonPathCriteriaCompiler {
     }
 
     private Criteria compileUnsafe(String input) {
-        var lexer = new JsonPathMongoLexer(CharStreams.fromString(input));
-        var tokens = new BufferedTokenStream(lexer);
-        var parser = new JsonPathMongoParser(tokens);
-        parserConfigurer.accept(parser);
-
-        var jsonPathIr = new JsonPathCompilerPass().getQueries(parser);
+        var astIr = astCompilerPass.transformToParserRepresentation(input);
+        var jsonPathIr = jsonPathCompilerPass.getQueries(astIr);
 
         var queries = jsonPathIr.stream()
             .map(this::toMongoIr)
