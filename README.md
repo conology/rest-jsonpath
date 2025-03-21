@@ -1,4 +1,4 @@
-# Jsonpath REST Filters
+# JSONPath REST Query
 [![Build Status](https://github.com/conology/rest-jsonpath/actions/workflows/verify.yml/badge.svg)](https://github.com/goatfryed/assert-baseline/actions/workflows/verify.yml)
 
 Enhance your rest collection endpoints with json path compatible filter queries
@@ -81,14 +81,16 @@ This can include special field handling, naming differences and more.
 DateTime fields require special treatment and must be configured.
 ```java
 var compiler = new JsonPathCriteriaCompilerBuilder()
-    .mongoSelectorPostProcessor(new SimpleDateTimePropertyMapper("created","updated"))
-    .build();
+    .addMongoSelectorPostProcessor(
+        new SimpleDateTimePropertyMapper(
+            "created","updated"
+    )).build();
 ```
 
 #### Field name mappings
 ```java
 var compiler = new JsonPathCriteriaCompilerBuilder()
-    .mongoSelectorPostProcessor(
+    .addMongoSelectorPostProcessor(
         new SimpleFieldNameMapper(
             Map.of(
                 "@type", "atType",
@@ -104,6 +106,7 @@ on more complex use cases.
 
 ### Limitations
 - No nested or-Support
+- And support only for and-ing multiple field criteria
 
 
 

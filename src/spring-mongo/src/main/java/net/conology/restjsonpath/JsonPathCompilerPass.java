@@ -6,6 +6,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -369,9 +371,18 @@ public class JsonPathCompilerPass {
         guardParserException(literal);
 
         if (literal.INT() != null) {
-            var number = Integer.valueOf(literal.INT().getText());
-            return new ValueNode(number);
+            return transformInteger(literal.INT());
         }
+
+        if (literal.FLOAT() != null) {
+            try {
+                var number = new BigDecimal(literal.FLOAT().getText());
+                return new ValueNode(number);
+            } catch (Exception e) {
+                throw failParserLexerMismatch();
+            }
+        }
+
         if (literal.QUOTED_TEXT() != null) {
             return new ValueNode(processQuotedText(literal.QUOTED_TEXT().getText()));
         }
@@ -389,6 +400,17 @@ public class JsonPathCompilerPass {
         }
 
         throw failParserLexerMismatch();
+    }
+
+    private ValueNode transformInteger(TerminalNode literalInt) {
+        var text = literalInt.getText();
+        try {
+            var number = Integer.parseInt(text);
+            return new ValueNode(number);
+        } catch (Exception e) {
+            var number = new BigInteger(text);
+            return new ValueNode(number);
+        }
     }
 
     private String processQuotedText(String quotedText) {

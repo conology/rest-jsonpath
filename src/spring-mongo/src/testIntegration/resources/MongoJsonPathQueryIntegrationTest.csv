@@ -3,3 +3,5 @@ owner.nickname,Downtown Bookstore,
 "books[?@.title==""The Great Adventure""]",Downtown Bookstore,
 "owner.contacts[?@.type==""secondMail"" && @.value==""alice@bookhaven.com""]",,todo
 "[""@type""] == ""independent""",Downtown Bookstore,todo
+employees[?@.salary > 51000.0],Riverside Books,
+employees[?@.salary > 51000],,

@@ -34,7 +34,7 @@ comparisonExpression:
     | relativeQuery regexComparison
     ;
 regexComparison: REGEX_COMPARISON_OPERATOR REGULAR_EXPRESSION;
-literal: INT | QUOTED_TEXT | TRUE | FALSE | NULL;
+literal: INT | FLOAT | QUOTED_TEXT | TRUE | FALSE | NULL;
 comparisonOperator: COMPARISON_OPERATOR;
 
 fragment QUOTED_SAFECODEPOINT: ~[["\\\u0000-\u001F];
@@ -45,6 +45,8 @@ fragment HEX: [0-9a-fA-F];
 NULL: 'null';
 FALSE: 'false';
 TRUE: 'true';
+INT: '0' | '-'?[1-9][0-9]* ;
+FLOAT: INT '.' [0-9]+;
 CURRENT_NODE_IDENTIFIER: '@';
 WILDCARD_SELECTOR: '*';
 COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
@@ -53,5 +55,4 @@ REGULAR_EXPRESSION: '/' (~[/\r\n] | '\\/' )+ '/' [gimscxdtu]*;
 SAFE_IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
 ESCAPESEQUENCE: '\\' (["\\/bfnrt] | UNICODE);
 QUOTED_TEXT: '"' (ESCAPESEQUENCE | QUOTED_SAFECODEPOINT)* '"';
-INT         : '0' | [1-9][0-9]* ;
 WS  :   [ \t]+ -> skip ;

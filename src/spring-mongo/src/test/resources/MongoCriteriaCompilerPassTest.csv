@@ -3,13 +3,16 @@ store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}
 @.store,"{""store"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",$[?@.store],
 store.book,"{""store.book"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",$[?@.store.book],
 "store == ""The Book Haven""","{""store"": ""The Book Haven""}",,
-field > 34,"{""field"": {""$gt"": 34}}",,
-field < 34,"{""field"": {""$lt"": 34}}",,
+field > 34,"{""field"": {""$gt"": 34}}","Note: take extra care.
+Due to underlying mongo & framework setups, comparison of integer with float and vice versa might not work as expected.
+Consider casting this in a postprocessor for known fields or raise a documentation warning.
+Atm we don't see a library side solution here.",
+field < -34,"{""field"": {""$lt"": -34}}",,
 field <= 34,"{""field"": {""$lte"": 34}}",,
-field >= 34,"{""field"": {""$gte"": 34}}",,
+field >= -34,"{""field"": {""$gte"": -34}}",,
 field != 34,"{""field"": {""$ne"": 34}}",,
 field == 34,"{""field"": 34}",,
-price == 13.55,,,
+price == -13.55,"{""price"": {""$numberDecimal"": ""-13.55""}}",,
 flag == false,"{""flag"": false}",,
 flag == true,"{""flag"": true}",,
 flag > true,!invalidQuery:Can't apply operator > to value of type Boolean,,
@@ -35,7 +38,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
-"agreement[?@.[""@referredType""]==""ServiceContract""]",,,
+"agreement[?@[""@referredType""]==""ServiceContract""]","{""agreement"": {""$elemMatch"": {""@referredType"": ""ServiceContract""}}}",,
 store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]","{""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}","$[?@.[""@type""]]",
 books[?(@.title)],!lowPriority,,we don't support expressions atm that would require parenthesis
