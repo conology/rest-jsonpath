@@ -46,14 +46,12 @@ class MongoCriteriaCompilerPassTest {
         }
 
         var compilationError = assertThatCode(() -> compile(input))
-            .describedAs("compilation error");
+                .describedAs("compilation error");
 
         if ("error".equals(errorType)) {
             compilationError.isInstanceOf(Exception.class);
-        } else if(
-            "unsupported".equals(errorType)
-            || "invalidQuery".equals(errorType)
-        ){
+        } else if ("unsupported".equals(errorType)
+                || "invalidQuery".equals(errorType)) {
             compilationError.isInstanceOf(InvalidQueryException.class);
         } else {
             throw new TestInstantiationException("error test of type %s not defined".formatted(errorType));
@@ -71,9 +69,9 @@ class MongoCriteriaCompilerPassTest {
 
     private static Criteria compile(String input) {
         return new JsonPathCriteriaCompilerBuilder()
-            .mongoSelectorPostProcessor(new SimpleDateTimePropertyMapper("born"))
-            .mongoSelectorPostProcessor(new SimpleFieldNameMapper("@type", "atType"))
-            .build()
-            .compile(input);
+                .mongoSelectorPostProcessor(new SimpleDateTimePropertyMapper("born"))
+                .mongoSelectorPostProcessor(new SimpleFieldNameMapper("@type", "atType"))
+                .build()
+                .compile(input);
     }
 }

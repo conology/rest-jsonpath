@@ -20,18 +20,38 @@ public class JsonPathCompilerPass {
     }
 
     private List<PropertyFilterNode> transformRestQueries(
-        JsonPathMongoParser.RestQueriesContext ctx
-    ) {
+            JsonPathMongoParser.RestQueriesContext ctx) {
         guardParserException(ctx);
 
         return ctx.restQuery().stream()
-            .map(this::transform)
-            .toList();
+                .map(this::transform)
+                .toList();
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
         guardParserException(restQueryContext);
-        return transform(restQueryContext.restAndQuery());
+        return transform(restQueryContext.restLogicalQuery());
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.RestLogicalQueryContext ctx) {
+        guardParserException(ctx);
+        return transform(ctx.restOrQuery());
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.RestOrQueryContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.restAndQuery().isEmpty()) {
+            throw failParserLexerMismatch();
+        }
+
+        var expressions = ctx.restAndQuery()
+                .stream()
+                .map(this::transform)
+                .toList();
+
+        return expressions.size() == 1 ? expressions.getFirst()
+                : new AndFilterNode(expressions);
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestAndQueryContext ctx) {
@@ -42,12 +62,12 @@ public class JsonPathCompilerPass {
         }
 
         var expressions = ctx.restBasicQuery()
-            .stream()
-            .map(this::transform)
-            .toList();
+                .stream()
+                .map(this::transform)
+                .toList();
 
         return expressions.size() == 1 ? expressions.getFirst()
-            : new AndFilterNode(expressions);
+                : new AndFilterNode(expressions);
     }
 
     public PropertyFilterNode transform(JsonPathMongoParser.RestBasicQueryContext ctx) {
@@ -103,7 +123,8 @@ public class JsonPathCompilerPass {
         return relativeQuery;
     }
 
-    private SelectorNode transformRelativeQueryStartSelector(JsonPathMongoParser.SimplifiedRelativeQueryContext ctx, PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
+    private SelectorNode transformRelativeQueryStartSelector(JsonPathMongoParser.SimplifiedRelativeQueryContext ctx,
+            PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
         if (ctx.memberNameShortHand() != null) {
             return transformPropertySelector(ctx.memberNameShortHand(), segments);
         }
@@ -125,18 +146,16 @@ public class JsonPathCompilerPass {
     }
 
     private void collectSelectorNodes(
-        RelativeQueryNode relativeQuery,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
+            RelativeQueryNode relativeQuery,
+            PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
         while (segments.hasNext()) {
             var next = segments.next();
             guardParserException(next);
 
             if (next.memberNameShortHand() != null) {
                 var propertySelector = transformPropertySelector(
-                    next.memberNameShortHand(),
-                    segments
-                );
+                        next.memberNameShortHand(),
+                        segments);
                 relativeQuery.addNode(propertySelector);
                 continue;
             }
@@ -148,14 +167,12 @@ public class JsonPathCompilerPass {
                 continue;
             }
 
-
             throw failParserLexerMismatch();
         }
     }
 
     private SelectorNode transformSelectorNode(
-        JsonPathMongoParser.BracketedExpressionContext ctx
-    ) {
+            JsonPathMongoParser.BracketedExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.filterSelector() != null) {
@@ -184,20 +201,17 @@ public class JsonPathCompilerPass {
     }
 
     private FieldSelectorNode transformPropertySelector(
-        JsonPathMongoParser.MemberNameShortHandContext ctx,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
+            JsonPathMongoParser.MemberNameShortHandContext ctx,
+            PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
         guardParserException(ctx);
         return transformPropertySelector(
-            ctx.SAFE_IDENTIFIER().getText(),
-            segments
-        );
+                ctx.SAFE_IDENTIFIER().getText(),
+                segments);
     }
 
     private FieldSelectorNode transformPropertySelector(
-        String startField,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
+            String startField,
+            PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
         var path = new ArrayList<String>();
         path.add(startField);
         collectPropertySelectorPath(path, segments);
@@ -244,10 +258,9 @@ public class JsonPathCompilerPass {
     }
 
     private RelativeValueComparingNode transformComparison(
-        RelativeQueryNode propertyQuery,
-        JsonPathMongoParser.LiteralContext literal,
-        JsonPathMongoParser.ComparisonOperatorContext operatorCtx
-    ) {
+            RelativeQueryNode propertyQuery,
+            JsonPathMongoParser.LiteralContext literal,
+            JsonPathMongoParser.ComparisonOperatorContext operatorCtx) {
         var valueNode = transformLiteral(literal);
 
         var operator = switch (operatorCtx.getText()) {
@@ -262,8 +275,11 @@ public class JsonPathCompilerPass {
 
         return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
     }
+
     private static final Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
-    private RegexFilterNode transformRegexComparison(RelativeQueryNode queryNode, JsonPathMongoParser.RegexComparisonContext ctx) {
+
+    private RegexFilterNode transformRegexComparison(RelativeQueryNode queryNode,
+            JsonPathMongoParser.RegexComparisonContext ctx) {
         guardParserException(ctx);
 
         if (ctx.REGULAR_EXPRESSION() != null) {
@@ -274,10 +290,9 @@ public class JsonPathCompilerPass {
     }
 
     private static RegexFilterNode transformRegexComparison(
-        RelativeQueryNode queryNode,
-        TerminalNode operator,
-        TerminalNode regex
-    ) {
+            RelativeQueryNode queryNode,
+            TerminalNode operator,
+            TerminalNode regex) {
         var isNegated = switch (operator.getText()) {
             case "=~" -> false;
             case "!~" -> true;
@@ -291,16 +306,15 @@ public class JsonPathCompilerPass {
         }
         var pattern = matcher.group(1);
         var options = matcher.group(2)
-            .chars()
-            .mapToObj(c -> (char) c)
-            .collect(Collectors.toSet());
+                .chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toSet());
         return new RegexFilterNode(queryNode, pattern, options, isNegated);
     }
 
     private static void collectPropertySelectorPath(
-        ArrayList<String> path,
-        PeekingIterator<JsonPathMongoParser.SegmentContext> segments
-    ) {
+            ArrayList<String> path,
+            PeekingIterator<JsonPathMongoParser.SegmentContext> segments) {
         while (segments.hasNext()) {
             var segment = segments.peek();
             guardParserException(segment);
@@ -317,12 +331,28 @@ public class JsonPathCompilerPass {
 
     private PropertyFilterNode transform(JsonPathMongoParser.FilterSelectorContext filterCtx) {
         guardParserException(filterCtx);
-        
-        if (filterCtx.andExpression() != null) {
-            return transform(filterCtx.andExpression());
+
+        if (filterCtx.orExpression() != null) {
+            return transform(filterCtx.orExpression());
         }
-        
+
         throw failParserLexerMismatch();
+    }
+
+    private PropertyFilterNode transform(JsonPathMongoParser.OrExpressionContext ctx) {
+        guardParserException(ctx);
+
+        if (ctx.andExpression().isEmpty()) {
+            throw failParserLexerMismatch();
+        }
+
+        var expressions = ctx.andExpression()
+                .stream()
+                .map(this::transform)
+                .toList();
+
+        return expressions.size() == 1 ? expressions.getFirst()
+                : new OrFilterNode(expressions);
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.AndExpressionContext ctx) {
@@ -333,15 +363,16 @@ public class JsonPathCompilerPass {
         }
 
         var expressions = ctx.logicalExpression()
-            .stream()
-            .map(this::transformLogicalExpression)
-            .toList();
+                .stream()
+                .map(this::transformLogicalExpression)
+                .toList();
 
         return expressions.size() == 1 ? expressions.getFirst()
-            : new AndFilterNode(expressions);
+                : new AndFilterNode(expressions);
     }
 
-    private PropertyFilterNode transformLogicalExpression(JsonPathMongoParser.LogicalExpressionContext logicalExpression) {
+    private PropertyFilterNode transformLogicalExpression(
+            JsonPathMongoParser.LogicalExpressionContext logicalExpression) {
         guardParserException(logicalExpression);
 
         if (logicalExpression.comparisonExpression() != null) {
@@ -356,14 +387,13 @@ public class JsonPathCompilerPass {
     }
 
     private ExistenceFilterNode transformExistenceExpression(
-        JsonPathMongoParser.ExistenceExpressionContext ctx
-    ) {
+            JsonPathMongoParser.ExistenceExpressionContext ctx) {
         guardParserException(ctx);
-        
+
         if (ctx.relativeQuery() != null) {
             return new ExistenceFilterNode(transformRelativeQuery(ctx.relativeQuery()));
         }
-        
+
         throw failParserLexerMismatch();
     }
 
@@ -419,7 +449,6 @@ public class JsonPathCompilerPass {
         return StringEscapeUtils.unescapeJson(inner);
     }
 
-
     private static void guardParserException(ParserRuleContext ctx) {
         if (ctx.exception != null) {
             throw new IllegalArgumentException(ctx.exception);
@@ -428,7 +457,6 @@ public class JsonPathCompilerPass {
 
     private static AssertionError failParserLexerMismatch() {
         return new AssertionError(
-            "unexpected parser state. This indicates a language version mismatch"
-        );
+                "unexpected parser state. This indicates a language version mismatch");
     }
 }
