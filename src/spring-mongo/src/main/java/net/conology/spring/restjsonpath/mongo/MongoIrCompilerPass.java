@@ -2,7 +2,6 @@ package net.conology.spring.restjsonpath.mongo;
 
 import java.util.List;
 
-import net.conology.restjsonpath.InvalidQueryException;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
 
@@ -34,28 +33,34 @@ public class MongoIrCompilerPass {
     private MongoAllOfSelector compileAllOfTest(AndFilterNode andNode) {
         return new MongoAllOfSelector(
                 andNode.getNodes().stream()
-                        .map(this::compilePropertyTest)
+                        .map(node -> {
+                            return switch (node) {
+                                case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
+                                case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
+                                case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
+                                case OrFilterNode orFilterNode -> compileAnyOfTest(orFilterNode);
+                                case AndFilterNode andFilterNode ->
+                                    new MongoAnyOfSelector(List.of(compileAllOfTest(andFilterNode)));
+                            };
+                        })
                         .toList());
     }
 
-    private MongoSelector compileAnyOfTest(OrFilterNode orNode) {
+    private MongoAnyOfSelector compileAnyOfTest(OrFilterNode orNode) {
         return new MongoAnyOfSelector(
-                orNode.getNodes().stream().map(node -> new MongoAllOfSelector(List.of(compilePropertyTest(node))))
-                        .toList());
-
-        // List<MongoSelector> test = orNode.getNodes().stream().map(node -> {
-        // return switch (node) {
-        // case AndFilterNode and -> compileAllOfTest(and);
-        // default -> compilePropertyTest(node);
-        // };
-        // }).toList();
-
-        // return null;
-
-        // return new MongoAnyOfSelector(new MongoAllOfSelector(
-        // orNode.getNodes().stream()
-        // .map(this::compilePropertyTest)
-        // .toList()));
+                orNode.getNodes().stream().map(node -> {
+                    return switch (node) {
+                        case RelativeValueComparingNode comparingFilter ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(comparingFilter)));
+                        case ExistenceFilterNode existenceFilter ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(existenceFilter)));
+                        case RegexFilterNode regexFilterNode ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(regexFilterNode)));
+                        case OrFilterNode orFilterNode ->
+                            new MongoAllOfSelector(List.of(compileAnyOfTest(orFilterNode)));
+                        case AndFilterNode ignored -> compileAllOfTest(ignored);
+                    };
+                }).toList());
     }
 
     public MongoAlternativesSelector compilePropertyTest(PropertyFilterNode filterNode) {
@@ -64,11 +69,10 @@ public class MongoIrCompilerPass {
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
             case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
 
-            // TODO
             case OrFilterNode ignored ->
-                throw new InvalidQueryException("nested or expressions are not supported");
+                throw new RuntimeException("OrFilterNode not expected here. This should never happen.");
             case AndFilterNode ignored ->
-                throw new InvalidQueryException("nested and expressions are not supported");
+                throw new RuntimeException("AndFilterNode not expected here. This should never happen.");
         };
     }
 
