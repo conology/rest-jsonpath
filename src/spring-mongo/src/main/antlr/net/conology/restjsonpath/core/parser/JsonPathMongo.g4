@@ -5,8 +5,7 @@ package net.conology.restjsonpath.core.parser;
 }
 
 restQueries: restQuery (',' restQuery)* EOF;
-restQuery: restLogicalQuery;
-restLogicalQuery: restOrQuery;
+restQuery: restOrQuery;
 restOrQuery: restAndQuery ( '||' restAndQuery)*;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
 restBasicQuery: restExistenceQuery | restComparisonQuery;

@@ -30,12 +30,7 @@ public class JsonPathCompilerPass {
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
         guardParserException(restQueryContext);
-        return transform(restQueryContext.restLogicalQuery());
-    }
-
-    private PropertyFilterNode transform(JsonPathMongoParser.RestLogicalQueryContext ctx) {
-        guardParserException(ctx);
-        return transform(ctx.restOrQuery());
+        return transform(restQueryContext.restOrQuery());
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestOrQueryContext ctx) {
