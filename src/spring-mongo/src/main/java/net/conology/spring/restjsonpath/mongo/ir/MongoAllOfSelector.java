@@ -7,29 +7,33 @@ import java.util.List;
 
 public final class MongoAllOfSelector implements MongoSelector {
 
-    private final List<MongoPropertyCondition> tests;
+    private final List<MongoAlternativesSelector> tests;
 
-    public MongoAllOfSelector(List<MongoPropertyCondition> tests) {
+    public MongoAllOfSelector(List<MongoAlternativesSelector> tests) {
         this.tests = tests;
     }
 
-    public List<MongoPropertyCondition> getTests() {
+    public List<MongoAlternativesSelector> getTests() {
         return tests;
     }
 
     public void apply(Criteria parentCritera) {
-        var criteriaByPath = new HashMap<String,Criteria>();
+        var criteriaByPath = new HashMap<String, Criteria>();
         for (var test : tests) {
-            var path = test.getPropertySelector().getPathString();
-            var criteria = criteriaByPath.computeIfAbsent(
-                path,
-                parentCritera::and
-            );
-            test.getAssertion().apply(criteria);
+            switch (test) {
+                case MongoPropertyCondition propertyCondition -> {
+                    var path = propertyCondition.getPropertySelector().getPathString();
+                    var criteria = criteriaByPath.computeIfAbsent(
+                            path,
+                            parentCritera::and);
+                    propertyCondition.getAssertion().apply(criteria);
+                }
+                case MongoAnyOfSelector anyOfSelector -> anyOfSelector.apply(parentCritera);
+            }
         }
     }
 
-    public void addTest(MongoPropertyCondition test) {
+    public void addTest(MongoAlternativesSelector test) {
         tests.add(test);
     }
 

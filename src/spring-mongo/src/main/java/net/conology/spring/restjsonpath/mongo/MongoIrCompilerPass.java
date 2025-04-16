@@ -1,5 +1,7 @@
 package net.conology.spring.restjsonpath.mongo;
 
+import java.util.List;
+
 import net.conology.restjsonpath.InvalidQueryException;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
@@ -23,18 +25,40 @@ public class MongoIrCompilerPass {
     public MongoSelector compileTestNode(PropertyFilterNode filterNode) {
         if (filterNode instanceof AndFilterNode andNode) {
             return compileAllOfTest(andNode);
+        } else if (filterNode instanceof OrFilterNode orNode) {
+            return compileAnyOfTest(orNode);
         }
         return compilePropertyTest(filterNode);
     }
 
-    private MongoSelector compileAllOfTest(AndFilterNode andNode) {
+    private MongoAllOfSelector compileAllOfTest(AndFilterNode andNode) {
         return new MongoAllOfSelector(
                 andNode.getNodes().stream()
                         .map(this::compilePropertyTest)
                         .toList());
     }
 
-    public MongoPropertyCondition compilePropertyTest(PropertyFilterNode filterNode) {
+    private MongoSelector compileAnyOfTest(OrFilterNode orNode) {
+        return new MongoAnyOfSelector(
+                orNode.getNodes().stream().map(node -> new MongoAllOfSelector(List.of(compilePropertyTest(node))))
+                        .toList());
+
+        // List<MongoSelector> test = orNode.getNodes().stream().map(node -> {
+        // return switch (node) {
+        // case AndFilterNode and -> compileAllOfTest(and);
+        // default -> compilePropertyTest(node);
+        // };
+        // }).toList();
+
+        // return null;
+
+        // return new MongoAnyOfSelector(new MongoAllOfSelector(
+        // orNode.getNodes().stream()
+        // .map(this::compilePropertyTest)
+        // .toList()));
+    }
+
+    public MongoAlternativesSelector compilePropertyTest(PropertyFilterNode filterNode) {
         return switch (filterNode) {
             case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
@@ -48,23 +72,24 @@ public class MongoIrCompilerPass {
         };
     }
 
-    private MongoPropertyCondition compilePropertyTest(RegexFilterNode node) {
+    private MongoAlternativesSelector compilePropertyTest(RegexFilterNode node) {
         var assertion = new RegexMongoValueAssertion(node);
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoPropertyCondition compilePropertyTest(ExistenceFilterNode node) {
+    private MongoAlternativesSelector compilePropertyTest(ExistenceFilterNode node) {
         return compilePropertyTest(node.getRelativeQueryNode(), null);
     }
 
-    private MongoPropertyCondition compilePropertyTest(RelativeValueComparingNode node) {
+    private MongoAlternativesSelector compilePropertyTest(RelativeValueComparingNode node) {
         var assertion = new MongoValueComparingAssertion(
                 node.getOperator(),
                 node.getValueNode().getValue());
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoPropertyCondition compilePropertyTest(RelativeQueryNode queryNode, MongoPropertyAssertion assertion) {
+    private MongoAlternativesSelector compilePropertyTest(RelativeQueryNode queryNode,
+            MongoPropertyAssertion assertion) {
         return new NestedValueTestCompiler(
                 queryNode,
                 this,

@@ -46,7 +46,7 @@ public class JsonPathCompilerPass {
                 .toList();
 
         return expressions.size() == 1 ? expressions.getFirst()
-                : new AndFilterNode(expressions);
+                : new OrFilterNode(expressions);
     }
 
     private PropertyFilterNode transform(JsonPathMongoParser.RestAndQueryContext ctx) {
