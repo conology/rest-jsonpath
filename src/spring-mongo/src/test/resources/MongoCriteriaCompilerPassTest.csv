@@ -37,7 +37,7 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
-"books[?@.title == ""chuck"" || @.title == ""norris""]",!unsupported,,support for nested or expressions not planned atm.
+"books[?@.title == ""chuck"" || @.title == ""norris""]","{""books"": {""$elemMatch"": {""$or"": [{""title"": ""chuck""}, {""title"": ""norris""}]}}}",,support for nested or expressions not planned atm.
 "agreement[?@[""@referredType""]==""ServiceContract""]","{""agreement"": {""$elemMatch"": {""@referredType"": ""ServiceContract""}}}",,
 store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]","{""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}","$[?@.[""@type""]]",
@@ -46,7 +46,7 @@ books[?(@.title)],!lowPriority,,we don't support expressions atm that would requ
 !@.owner,!unsupported,,
 "!(@.owner==""steve"")",!unsupported,,
 created.$gte == 12345,!unsupported,$[?@.created >= 12345],"consider PostProcessors, if you want to support special query masks"
-books[?@.created > 1234 || @.created < 3244],!unsupported,,
+books[?@.created > 1234 || @.created < 3244],"{""books"": {""$elemMatch"": {""$or"": [{""created"": {""$gt"": 1234}}, {""created"": {""$lt"": 3244}}]}}}",,
 firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comparison between fields not planned atm
 name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
 "escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,
@@ -65,7 +65,6 @@ test[invalid,!invalidQuery,,
 [?@.title],!invalidQuery:root query must always start with a property selection,,
 [0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
-"someArray[?@.color == ""red"" && @.number == 10 && @.x == 5]",test,,
 "color == ""red"" || number == 10","{""$or"": [{""color"": ""red""}, {""number"": 10}]}",,
 "color == ""red"" || color == ""blue""","{""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}",,
 "color == ""red"" && number == 10","{""color"": ""red"", ""number"": 10}",,
@@ -73,3 +72,8 @@ test[invalid,!invalidQuery,,
 "color == ""red"" && name == ""Name"" && number == 10","{""color"": ""red"", ""name"": ""Name"", ""number"": 10}",,
 "color == ""red"" || name == ""Name"" && number == 10","{""$or"": [{""color"": ""red""}, {""name"": ""Name"", ""number"": 10}]}",,
 "color == ""red"" && name == ""Name"" || number == 10","{""$or"": [{""color"": ""red"", ""name"": ""Name""}, {""number"": 10}]}",,
+"someArray[?@.color == ""red"" && @.number == 10]","{""someArray"": {""$elemMatch"": {""color"": ""red"", ""number"": 10}}}",,
+"someArray[?@.color == ""red"" || @.number == 10]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""number"": 10}]}}}",,
+"someArray[?@.color == ""red"" || @.number == 10 && @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""number"": 10, ""name"": ""Name""}]}}}",,
+"someArray[?@.color == ""red"" && @.number == 10 || @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red"", ""number"": 10}, {""name"": ""Name""}]}}}",,
+"someArray[?@.color == ""red"" || @.color == ""blue""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}}}",,
