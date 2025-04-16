@@ -85,11 +85,11 @@ public class JsonPathCriteriaCompiler {
     }
 
     private void guardInvalidTopLevelQuery(MongoAllOfSelector allOf) {
-        // allOf.getTests().forEach(this::guardInvalidTopLevelQuery);
+        allOf.getTests().forEach(this::guardInvalidTopLevelQuery);
     }
 
     private void guardInvalidTopLevelQuery(MongoAnyOfSelector anyOf) {
-        // anyOf.getTests().forEach(this::guardInvalidTopLevelQuery);
+        anyOf.getAllOfSelectors().forEach(selector -> selector.getTests().forEach(this::guardInvalidTopLevelQuery));
     }
 
     private void guardInvalidTopLevelQuery(MongoPropertyCondition condition) {

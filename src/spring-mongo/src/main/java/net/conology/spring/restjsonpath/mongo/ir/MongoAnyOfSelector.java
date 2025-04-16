@@ -23,6 +23,10 @@ public final class MongoAnyOfSelector implements MongoAlternativesSelector, Mong
         parentCriteria.orOperator(criterias);
     }
 
+    public List<MongoAllOfSelector> getAllOfSelectors() {
+        return allOfSelectors;
+    }
+
     @Override
     public Criteria asCriteria() {
         var critera = new Criteria();
