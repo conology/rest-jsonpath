@@ -37,21 +37,11 @@ public class MongoIrCompilerPass {
                 .stream()
                 .map(node -> {
                     return switch (node) {
-                        case RelativeValueComparingNode comparingFilter -> compilePropertyTest(
-                            comparingFilter
-                        );
-                        case ExistenceFilterNode existenceFilter -> compilePropertyTest(
-                            existenceFilter
-                        );
-                        case RegexFilterNode regexFilterNode -> compilePropertyTest(
-                            regexFilterNode
-                        );
-                        case OrFilterNode orFilterNode -> compileAnyOfTest(
-                            orFilterNode
-                        );
-                        case AndFilterNode andFilterNode -> compileAllOfTest(
-                            andFilterNode
-                        );
+                        case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
+                        case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
+                        case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
+                        case OrFilterNode orFilterNode -> compileAnyOfTest(orFilterNode);
+                        case AndFilterNode andFilterNode -> compileAllOfTest(andFilterNode);
                     };
                 })
                 .toList()
@@ -65,19 +55,16 @@ public class MongoIrCompilerPass {
                 .stream()
                 .map(node -> {
                     return switch (node) {
-                        case RelativeValueComparingNode comparingFilter -> new MongoAllOfSelector(
-                            List.of(compilePropertyTest(comparingFilter))
-                        );
-                        case ExistenceFilterNode existenceFilter -> new MongoAllOfSelector(
-                            List.of(compilePropertyTest(existenceFilter))
-                        );
-                        case RegexFilterNode regexFilterNode -> new MongoAllOfSelector(
-                            List.of(compilePropertyTest(regexFilterNode))
-                        );
-                        case OrFilterNode orFilterNode -> new MongoAllOfSelector(
-                            List.of(compileAnyOfTest(orFilterNode))
-                        );
-                        case AndFilterNode ignored -> compileAllOfTest(ignored);
+                        case RelativeValueComparingNode comparingFilter ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(comparingFilter)));
+                        case ExistenceFilterNode existenceFilter ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(existenceFilter)));
+                        case RegexFilterNode regexFilterNode ->
+                            new MongoAllOfSelector(List.of(compilePropertyTest(regexFilterNode)));
+                        case OrFilterNode orFilterNode ->
+                            new MongoAllOfSelector(List.of(compileAnyOfTest(orFilterNode)));
+                        case AndFilterNode ignored ->
+                            compileAllOfTest(ignored);
                     };
                 })
                 .toList()
@@ -88,21 +75,13 @@ public class MongoIrCompilerPass {
         PropertyFilterNode filterNode
     ) {
         return switch (filterNode) {
-            case RelativeValueComparingNode comparingFilter -> compilePropertyTest(
-                comparingFilter
-            );
-            case ExistenceFilterNode existenceFilter -> compilePropertyTest(
-                existenceFilter
-            );
-            case RegexFilterNode regexFilterNode -> compilePropertyTest(
-                regexFilterNode
-            );
-            case OrFilterNode ignored -> throw new RuntimeException(
-                "OrFilterNode not expected here. This should never happen."
-            );
-            case AndFilterNode ignored -> throw new RuntimeException(
-                "AndFilterNode not expected here. This should never happen."
-            );
+            case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
+            case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
+            case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
+            case OrFilterNode ignored ->
+                throw new RuntimeException("OrFilterNode not expected here. This should never happen.");
+            case AndFilterNode ignored ->
+                throw new RuntimeException("AndFilterNode not expected here. This should never happen.");
         };
     }
 
