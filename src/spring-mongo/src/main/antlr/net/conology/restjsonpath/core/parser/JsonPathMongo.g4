@@ -5,7 +5,8 @@ package net.conology.restjsonpath.core.parser;
 }
 
 restQueries: restQuery (',' restQuery)* EOF;
-restQuery: restAndQuery;
+restQuery: restOrQuery;
+restOrQuery: restAndQuery ( '||' restAndQuery)*;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
 restBasicQuery: restExistenceQuery | restComparisonQuery;
 restExistenceQuery: restRelativeQuery;
@@ -24,7 +25,8 @@ segment:
 	;
 memberNameShortHand: SAFE_IDENTIFIER;
 bracketedExpression: '[' (QUOTED_TEXT|filterSelector|WILDCARD_SELECTOR|INT) ']';
-filterSelector: '?' andExpression;
+filterSelector: '?' orExpression;
+orExpression: andExpression ('||' andExpression)*; 
 andExpression: logicalExpression ( '&&' logicalExpression)*;
 logicalExpression: comparisonExpression | existenceExpression;
 existenceExpression: relativeQuery;

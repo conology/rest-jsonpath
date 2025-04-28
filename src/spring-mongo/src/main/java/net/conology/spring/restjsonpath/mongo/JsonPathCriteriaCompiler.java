@@ -5,6 +5,7 @@ import net.conology.restjsonpath.ast.PropertyFilterNode;
 import net.conology.restjsonpath.core.parser.JsonPathMongoLexer;
 import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
 import net.conology.spring.restjsonpath.mongo.ir.MongoAllOfSelector;
+import net.conology.spring.restjsonpath.mongo.ir.MongoAnyOfSelector;
 import net.conology.spring.restjsonpath.mongo.ir.MongoPropertyCondition;
 import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
 import org.antlr.v4.runtime.BufferedTokenStream;
@@ -36,13 +37,11 @@ public class JsonPathCriteriaCompiler {
     public Criteria compile(String input) {
         try {
             return compileUnsafe(input);
-        } catch (AssertionError error){
+        } catch (AssertionError error) {
             throw error;
         } catch (
-            IllegalStateException
-            | InvalidMongoDbApiUsageException
-            cause
-        ) {
+                IllegalStateException
+                | InvalidMongoDbApiUsageException cause) {
             throw new InvalidQueryException(cause);
         }
     }
@@ -52,9 +51,9 @@ public class JsonPathCriteriaCompiler {
         var jsonPathIr = jsonPathCompilerPass.getQueries(astIr);
 
         var queries = jsonPathIr.stream()
-            .map(this::toMongoIr)
-            .map(MongoSelector::asCriteria)
-            .toList();
+                .map(this::toMongoIr)
+                .map(MongoSelector::asCriteria)
+                .toList();
 
         if (queries.size() == 1) {
             return queries.getFirst();
@@ -66,8 +65,8 @@ public class JsonPathCriteriaCompiler {
     private MongoSelector toMongoIr(PropertyFilterNode filterNode) {
 
         var ir = mongoIrCompilerPassBuilder
-            .build(filterNode)
-            .transformTestNode();
+                .build(filterNode)
+                .transformTestNode();
 
         for (var visitor : mongoPostProcessors) {
             visitor.accept(ir);
@@ -81,12 +80,17 @@ public class JsonPathCriteriaCompiler {
     private void guardInvalidTopLevelQuery(MongoSelector ir) {
         switch (ir) {
             case MongoAllOfSelector allOf -> guardInvalidTopLevelQuery(allOf);
+            case MongoAnyOfSelector anyOf -> guardInvalidTopLevelQuery(anyOf);
             case MongoPropertyCondition condition -> guardInvalidTopLevelQuery(condition);
         }
     }
 
     private void guardInvalidTopLevelQuery(MongoAllOfSelector allOf) {
         allOf.getTests().forEach(this::guardInvalidTopLevelQuery);
+    }
+
+    private void guardInvalidTopLevelQuery(MongoAnyOfSelector anyOf) {
+        anyOf.getAllOfSelectors().forEach(selector -> selector.getTests().forEach(this::guardInvalidTopLevelQuery));
     }
 
     private void guardInvalidTopLevelQuery(MongoPropertyCondition condition) {

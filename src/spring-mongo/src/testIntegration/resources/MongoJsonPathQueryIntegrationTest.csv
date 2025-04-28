@@ -5,3 +5,4 @@ owner.nickname,Downtown Bookstore,
 "[""@type""] == ""independent""",Downtown Bookstore,todo
 employees[?@.salary > 51000.0],Riverside Books,
 employees[?@.salary > 51000],,
+"owner.firstName == ""Alice"" || owner.firstName == ""George"" && name == ""Downtown Bookstore""",Downtown Bookstore,

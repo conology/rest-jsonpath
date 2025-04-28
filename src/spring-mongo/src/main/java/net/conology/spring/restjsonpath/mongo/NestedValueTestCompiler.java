@@ -1,6 +1,5 @@
 package net.conology.spring.restjsonpath.mongo;
 
-
 import net.conology.restjsonpath.PeekingIterator;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
@@ -54,11 +53,9 @@ public class NestedValueTestCompiler {
     }
 
     private MongoPropertyCondition createTest(MongoFieldSelector fieldSelector, MongoElementMatch elementMatch) {
-        var assertion =
-            elementMatch != null ? elementMatch
-            : ( finalAssertion != null ? finalAssertion
-                : parent.getExistenceAssertion()
-            );
+        var assertion = elementMatch != null ? elementMatch
+                : (finalAssertion != null ? finalAssertion
+                        : parent.getExistenceAssertion());
         return new MongoPropertyCondition(
             fieldSelector,
             assertion
@@ -97,23 +94,23 @@ public class NestedValueTestCompiler {
     }
 
     private MongoElementMatch compileElementMatch(
-        PeekingIterator<SelectorNode> nodes
-    ) {
-        var propertyTests = new ArrayList<MongoPropertyCondition>();
+            PeekingIterator<SelectorNode> nodes) {
+        var alternativesSelectors = new ArrayList<MongoAlternativesSelector>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
             if (next instanceof PropertyFilterNode filterNode) {
                 nodes.next();
                 var testNode = parent.compileTestNode(filterNode);
                 switch (testNode) {
-                    case MongoAllOfSelector allOf -> propertyTests.addAll(allOf.getTests());
-                    case MongoPropertyCondition propertyTest -> propertyTests.add(propertyTest);
+                    case MongoAllOfSelector allOf -> alternativesSelectors.addAll(allOf.getTests());
+                    case MongoAnyOfSelector anyOf -> alternativesSelectors.add(anyOf);
+                    case MongoPropertyCondition propertyTest -> alternativesSelectors.add(propertyTest);
                 }
             } else {
                 break;
             }
         }
-        return propertyTests.isEmpty() ? null
-            : new MongoElementMatch(new MongoAllOfSelector(propertyTests));
+        return alternativesSelectors.isEmpty() ? null
+                : new MongoElementMatch(new MongoAllOfSelector(alternativesSelectors));
     }
 }
