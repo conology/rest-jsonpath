@@ -13,9 +13,10 @@ public class NestedValueTestCompiler {
     private final MongoPropertyAssertion finalAssertion;
 
     public NestedValueTestCompiler(
-            RelativeQueryNode relativeQueryNode,
-            MongoIrCompilerPass parent,
-            MongoPropertyAssertion finalAssertion) {
+        RelativeQueryNode relativeQueryNode,
+        MongoIrCompilerPass parent,
+        MongoPropertyAssertion finalAssertion
+    ) {
         this.relativeQueryNode = relativeQueryNode;
         this.parent = parent;
         this.finalAssertion = finalAssertion;
@@ -32,10 +33,10 @@ public class NestedValueTestCompiler {
             var elementMatch = compileElementMatch(nodes);
 
             if (elementMatch == null && nodes.hasNext()) {
-                // field selector should consume everything except for filters that result in
-                // elementMatch
+                // field selector should consume everything except for filters that result in elementMatch
                 throw new AssertionError(
-                        "illegal state. this indicates a mismatch between parser and compiler");
+                    "illegal state. this indicates a mismatch between parser and compiler"
+                );
             }
 
             var currentTest = createTest(fieldSelector, elementMatch);
