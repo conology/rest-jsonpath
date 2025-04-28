@@ -24,9 +24,10 @@ public class JsonPathCriteriaCompiler {
     private final JsonPathCompilerPass jsonPathCompilerPass;
 
     public JsonPathCriteriaCompiler(
-            AstCompilerPass astCompilerPass,
-            MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
-            List<PostProcessor<MongoSelector>> mongoPostProcessors) {
+        AstCompilerPass astCompilerPass,
+        MongoIrCompilerPass.Builder mongoIrCompilerPassBuilder,
+        List<PostProcessor<MongoSelector>> mongoPostProcessors
+    ) {
         this.mongoIrCompilerPassBuilder = mongoIrCompilerPassBuilder;
         this.mongoPostProcessors = mongoPostProcessors;
         this.astCompilerPass = astCompilerPass;

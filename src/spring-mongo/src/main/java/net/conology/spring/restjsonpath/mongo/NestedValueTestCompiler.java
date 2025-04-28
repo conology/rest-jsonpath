@@ -34,8 +34,7 @@ public class NestedValueTestCompiler {
             var elementMatch = compileElementMatch(nodes);
 
             if (elementMatch == null && nodes.hasNext()) {
-                // field selector should consume everything except for filters that result in
-                // elementMatch
+                // field selector should consume everything except for filters that result in elementMatch
                 throw new AssertionError(
                     "illegal state. this indicates a mismatch between parser and compiler"
                 );
@@ -54,16 +53,14 @@ public class NestedValueTestCompiler {
         return head;
     }
 
-    private MongoPropertyCondition createTest(
-        MongoFieldSelector fieldSelector,
-        MongoElementMatch elementMatch
-    ) {
-        var assertion = elementMatch != null
-            ? elementMatch
-            : (finalAssertion != null
-                    ? finalAssertion
-                    : parent.getExistenceAssertion());
-        return new MongoPropertyCondition(fieldSelector, assertion);
+    private MongoPropertyCondition createTest(MongoFieldSelector fieldSelector, MongoElementMatch elementMatch) {
+        var assertion = elementMatch != null ? elementMatch
+                : (finalAssertion != null ? finalAssertion
+                        : parent.getExistenceAssertion());
+        return new MongoPropertyCondition(
+            fieldSelector,
+            assertion
+        );
     }
 
     private MongoFieldSelector compileSelector(

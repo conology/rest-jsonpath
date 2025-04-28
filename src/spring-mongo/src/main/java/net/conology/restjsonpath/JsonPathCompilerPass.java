@@ -18,9 +18,7 @@ public class JsonPathCompilerPass {
         return transformRestQueries(parser.restQueries());
     }
 
-    private List<PropertyFilterNode> transformRestQueries(
-        JsonPathMongoParser.RestQueriesContext ctx
-    ) {
+    private List<PropertyFilterNode> transformRestQueries(JsonPathMongoParser.RestQueriesContext ctx) {
         guardParserException(ctx);
 
         return ctx.restQuery().stream().map(this::transform).toList();

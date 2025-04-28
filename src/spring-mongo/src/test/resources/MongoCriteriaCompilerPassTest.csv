@@ -31,6 +31,7 @@ store.books[0].name,"{""store.books.0.name"": {""$exists"": true, ""$ne"": null,
 "books[?@.author==""Darwin""][?@.category==""fiction""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""Darwin""}, {""category"": ""fiction""}]}}}",,
 books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 "books[?@.authors[?@.name==""Darwin""]]","{""books"": {""$elemMatch"": {""authors"": {""$elemMatch"": {""name"": ""Darwin""}}}}}",,
+<<<<<<< HEAD
 "books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""chuck""}, {""title"": ""norris""}]}}}",,
 "externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""$and"": [{""owner"": ""myself""}, {""identifierType"": ""orderId""}, {""id"": ""12346""}]}}}",,
 "books[?@.author == ""chuck""][?@.author == ""norris""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""chuck""}, {""author"": ""norris""}]}}}",
@@ -38,6 +39,13 @@ books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, 
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
 "name != ""de"" && name != ""morgan""","{""$and"": [{""name"": {""$ne"": ""de""}}, {""name"": {""$ne"": ""morgan""}}]}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]","{""books"": {""$elemMatch"": {""$or"": [{""title"": ""chuck""}, {""title"": ""norris""}]}}}",,support for nested or expressions not planned atm.
+=======
+"books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""author"": ""chuck"", ""title"": ""norris""}}}",,
+"externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
+"books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
+"firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
+"name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
+>>>>>>> feat/-/introduce-support-for-logical-or
 "agreement[?@[""@referredType""]==""ServiceContract""]","{""agreement"": {""$elemMatch"": {""@referredType"": ""ServiceContract""}}}",,
 store == 'The Book Haven',!lowPriority,,use double quotes
 "[""@type""]","{""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}","$[?@.[""@type""]]",
@@ -65,6 +73,7 @@ test[invalid,!invalidQuery,,
 [?@.title],!invalidQuery:root query must always start with a property selection,,
 [0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
+"books[?@.title == ""chuck"" || @.title == ""norris""]","{""books"": {""$elemMatch"": {""$or"": [{""title"": ""chuck""}, {""title"": ""norris""}]}}}",,support for nested or expressions not planned atm.
 "color == ""red"" || number == 10","{""$or"": [{""color"": ""red""}, {""number"": 10}]}",,
 "color == ""red"" || color == ""blue""","{""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}",,
 "color == ""red"" && number == 10","{""$and"": [{""color"": ""red""}, {""number"": 10}]}",,
