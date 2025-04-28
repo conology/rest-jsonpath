@@ -56,8 +56,9 @@ public class NestedValueTestCompiler {
                 : (finalAssertion != null ? finalAssertion
                         : parent.getExistenceAssertion());
         return new MongoPropertyCondition(
-                fieldSelector,
-                assertion);
+            fieldSelector,
+            assertion
+        );
     }
 
     private MongoFieldSelector compileSelector(PeekingIterator<SelectorNode> nodes) {

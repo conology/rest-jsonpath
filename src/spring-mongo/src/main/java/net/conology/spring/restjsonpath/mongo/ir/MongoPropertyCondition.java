@@ -8,8 +8,9 @@ public final class MongoPropertyCondition implements MongoSelector, MongoAlterna
     private final MongoPropertyAssertion assertion;
 
     public MongoPropertyCondition(
-            MongoFieldSelector propertySelector,
-            MongoPropertyAssertion assertion) {
+        MongoFieldSelector propertySelector,
+        MongoPropertyAssertion assertion
+    ) {
         this.propertySelector = propertySelector;
         this.assertion = assertion;
     }
