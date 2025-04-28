@@ -24,16 +24,12 @@ public class JsonPathCompilerPass {
         return ctx.restQuery().stream().map(this::transform).toList();
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.RestQueryContext restQueryContext
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.RestQueryContext restQueryContext) {
         guardParserException(restQueryContext);
         return transform(restQueryContext.restOrQuery());
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.RestOrQueryContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.RestOrQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restAndQuery().isEmpty()) {
@@ -51,9 +47,7 @@ public class JsonPathCompilerPass {
             : new OrFilterNode(expressions);
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.RestAndQueryContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.RestAndQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restBasicQuery().isEmpty()) {
@@ -71,9 +65,7 @@ public class JsonPathCompilerPass {
             : new AndFilterNode(expressions);
     }
 
-    public PropertyFilterNode transform(
-        JsonPathMongoParser.RestBasicQueryContext ctx
-    ) {
+    public PropertyFilterNode transform(JsonPathMongoParser.RestBasicQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restParenthesesQuery() != null) {
@@ -91,9 +83,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.RestParenthesesQueryContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.RestParenthesesQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restOrQuery() != null) {
@@ -103,9 +93,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private ExistenceFilterNode transform(
-        JsonPathMongoParser.RestExistenceQueryContext ctx
-    ) {
+    private ExistenceFilterNode transform(JsonPathMongoParser.RestExistenceQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restRelativeQuery() != null) {
@@ -116,9 +104,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transformRelativeQuery(
-        JsonPathMongoParser.RestRelativeQueryContext ctx
-    ) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RestRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.simplifiedRelativeQuery() != null) {
@@ -132,9 +118,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transformRelativeQuery(
-        JsonPathMongoParser.SimplifiedRelativeQueryContext ctx
-    ) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.SimplifiedRelativeQueryContext ctx) {
         guardParserException(ctx);
 
         var segments = PeekingIterator.of(ctx.segment().iterator());
@@ -166,9 +150,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private RelativeQueryNode transformRelativeQuery(
-        JsonPathMongoParser.RelativeQueryContext ctx
-    ) {
+    private RelativeQueryNode transformRelativeQuery(JsonPathMongoParser.RelativeQueryContext ctx) {
         guardParserException(ctx);
 
         var relativeQuery = new RelativeQueryNode();
@@ -208,9 +190,7 @@ public class JsonPathCompilerPass {
         }
     }
 
-    private SelectorNode transformSelectorNode(
-        JsonPathMongoParser.BracketedExpressionContext ctx
-    ) {
+    private SelectorNode transformSelectorNode(JsonPathMongoParser.BracketedExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.filterSelector() != null) {
@@ -233,9 +213,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private UnsafeFieldSelector transformUnsafeFieldSelector(
-        TerminalNode quotedText
-    ) {
+    private UnsafeFieldSelector transformUnsafeFieldSelector(TerminalNode quotedText) {
         var fieldName = processQuotedText(quotedText.getText());
         return new UnsafeFieldSelector(fieldName);
     }
@@ -261,9 +239,7 @@ public class JsonPathCompilerPass {
         return new FieldSelectorNode(path);
     }
 
-    private PropertyFilterNode transformComparison(
-        JsonPathMongoParser.RestComparisonQueryContext ctx
-    ) {
+    private PropertyFilterNode transformComparison(JsonPathMongoParser.RestComparisonQueryContext ctx) {
         guardParserException(ctx);
 
         if (ctx.restRelativeQuery() == null) {
@@ -287,9 +263,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertyFilterNode transformComparison(
-        JsonPathMongoParser.ComparisonExpressionContext ctx
-    ) {
+    private PropertyFilterNode transformComparison(JsonPathMongoParser.ComparisonExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.relativeQuery() == null) {
@@ -402,9 +376,7 @@ public class JsonPathCompilerPass {
         }
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.FilterSelectorContext filterCtx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.FilterSelectorContext filterCtx) {
         guardParserException(filterCtx);
 
         if (filterCtx.orExpression() != null) {
@@ -414,9 +386,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.OrExpressionContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.OrExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.andExpression().isEmpty()) {
@@ -434,9 +404,7 @@ public class JsonPathCompilerPass {
             : new OrFilterNode(expressions);
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.AndExpressionContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.AndExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.logicalExpression().isEmpty()) {
@@ -454,9 +422,7 @@ public class JsonPathCompilerPass {
             : new AndFilterNode(expressions);
     }
 
-    private PropertyFilterNode transformLogicalExpression(
-        JsonPathMongoParser.LogicalExpressionContext logicalExpression
-    ) {
+    private PropertyFilterNode transformLogicalExpression(JsonPathMongoParser.LogicalExpressionContext logicalExpression) {
         guardParserException(logicalExpression);
 
         if (logicalExpression.paranthesesExpression() != null) {
@@ -478,9 +444,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertyFilterNode transform(
-        JsonPathMongoParser.ParanthesesExpressionContext ctx
-    ) {
+    private PropertyFilterNode transform(JsonPathMongoParser.ParanthesesExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.orExpression() != null) {
@@ -490,9 +454,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private ExistenceFilterNode transformExistenceExpression(
-        JsonPathMongoParser.ExistenceExpressionContext ctx
-    ) {
+    private ExistenceFilterNode transformExistenceExpression(JsonPathMongoParser.ExistenceExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.relativeQuery() != null) {
@@ -504,9 +466,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private ValueNode transformLiteral(
-        JsonPathMongoParser.LiteralContext literal
-    ) {
+    private ValueNode transformLiteral(JsonPathMongoParser.LiteralContext literal) {
         guardParserException(literal);
 
         if (literal.INT() != null) {
