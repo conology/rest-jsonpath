@@ -27,16 +27,16 @@ stores.books[*].name,"{""stores.books.name"": {""$exists"": true, ""$ne"": null,
 stores[?@.books[*].name],"{""stores"": {""$elemMatch"": {""books.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 store.books[0].name,"{""store.books.0.name"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "books[?@.author==""Charles Darwin""]","{""books"": {""$elemMatch"": {""author"": ""Charles Darwin""}}}",,
-"books[?@.author==""Darwin""].price","{""books"": {""$elemMatch"": {""author"": ""Darwin"", ""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
-"books[?@.author==""Darwin""][?@.category==""fiction""]","{""books"": {""$elemMatch"": {""author"": ""Darwin"", ""category"": ""fiction""}}}",,
+"books[?@.author==""Darwin""].price","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""Darwin""}, {""price"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}]}}}",,
+"books[?@.author==""Darwin""][?@.category==""fiction""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""Darwin""}, {""category"": ""fiction""}]}}}",,
 books[?@.author],"{""books"": {""$elemMatch"": {""author"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 "books[?@.authors[?@.name==""Darwin""]]","{""books"": {""$elemMatch"": {""authors"": {""$elemMatch"": {""name"": ""Darwin""}}}}}",,
-"books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""author"": ""chuck"", ""title"": ""norris""}}}",,
-"externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""owner"": ""myself"", ""identifierType"": ""orderId"", ""id"": ""12346""}}}",,
-"books[?@.author == ""chuck""][?@.author == ""norris""]",!invalidQuery,,Duplicated field tests make no sense and might result in compiler issues or unexpected query results
-"firstName == ""charles"" && lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
+"books[?@.author == ""chuck"" && @.title == ""norris""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""chuck""}, {""title"": ""norris""}]}}}",,
+"externalId[?@.owner==""myself"" && @.identifierType==""orderId"" && @.id==""12346""]","{""externalId"": {""$elemMatch"": {""$and"": [{""owner"": ""myself""}, {""identifierType"": ""orderId""}, {""id"": ""12346""}]}}}",,
+"books[?@.author == ""chuck""][?@.author == ""norris""]","{""books"": {""$elemMatch"": {""$and"": [{""author"": ""chuck""}, {""author"": ""norris""}]}}}",
+"firstName == ""charles"" && lastName == ""darwin""","{""$and"": [{""firstName"": ""charles""}, {""lastName"": ""darwin""}]}",,
 "name == """"charles"""" || name == """"darwin""""",!unsupported,,"or expressions are not supported. top level, you can provide multiple alternatives with ','"
-"name != ""de"" && name != ""morgan""","!undefined:{""name"": {""$ne"": ""morgan""}}",,this is or and or is not supported. consider regex instead
+"name != ""de"" && name != ""morgan""","{""$and"": [{""name"": {""$ne"": ""de""}}, {""name"": {""$ne"": ""morgan""}}]}",,this is or and or is not supported. consider regex instead
 "books[?@.title == ""chuck"" || @.title == ""norris""]","{""books"": {""$elemMatch"": {""$or"": [{""title"": ""chuck""}, {""title"": ""norris""}]}}}",,support for nested or expressions not planned atm.
 "agreement[?@[""@referredType""]==""ServiceContract""]","{""agreement"": {""$elemMatch"": {""@referredType"": ""ServiceContract""}}}",,
 store == 'The Book Haven',!lowPriority,,use double quotes
@@ -51,12 +51,12 @@ firstName == lastName,!unsupported,$[?@.firstName == @.lastName],support of comp
 name == $.name,!unsupported,,we don't support any lookup across different collection entries. no absolute queries allowed
 "escapeSequence == ""\n\t\b\r\f\""\\\u263A\u03A9""","{""escapeSequence"": ""\n\t\b\r\f\""\\☺Ω""}",,
 "status == ""closed"", status == ""completed""","{""$or"": [{""status"": ""closed""}, {""status"": ""completed""}]}",,"for simple ors like checking a field, consider using regex match =~"
-"born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}, ""name"": ""Anton""}",,Requires special configuration of DateTime fields
-age >= 123 && age <= 3445,"{""age"": {""$gte"": 123, ""$lte"": 3445}}",,
-"author.lastName == ""Darwin"" && author.firstName == ""Charles""","{""author.lastName"": ""Darwin"", ""author.firstName"": ""Charles""}",,
-"author == ""Charles"" && author == ""Darwin""",!invalidQuery,,
+"born > ""2016-07-18T16:00:00Z"" && name == ""Anton""","{""$and"": [{""born"": {""$gt"": {""$date"": ""2016-07-18T16:00:00Z""}}}, {""name"": ""Anton""}]}",,Requires special configuration of DateTime fields
+age >= 123 && age <= 3445,"{""$and"": [{""age"": {""$gte"": 123}}, {""age"": {""$lte"": 3445}}]}",,
+"author.lastName == ""Darwin"" && author.firstName == ""Charles""","{""$and"": [{""author.lastName"": ""Darwin""}, {""author.firstName"": ""Charles""}]}",,
+"author == ""Charles"" && author == ""Darwin""","{""$and"": [{""author"": ""Charles""}, {""author"": ""Darwin""}]}",,
 test[invalid,!invalidQuery,,
-"@.firstName == ""charles"" && @.lastName == ""darwin""","{""firstName"": ""charles"", ""lastName"": ""darwin""}",,
+"@.firstName == ""charles"" && @.lastName == ""darwin""","{""$and"": [{""firstName"": ""charles""}, {""lastName"": ""darwin""}]}",,
 "test[""@type""]","{""test.atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
 "book[""year created""]","{""book.year created"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,"Mongo allows spaces and other special chars in the fields, so no special handling required"
 "book["".comment""]","{""book..comment"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,No special error detection at the moment. This won't return the desired result
@@ -67,13 +67,20 @@ test[invalid,!invalidQuery,,
 "books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 "color == ""red"" || number == 10","{""$or"": [{""color"": ""red""}, {""number"": 10}]}",,
 "color == ""red"" || color == ""blue""","{""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}",,
-"color == ""red"" && number == 10","{""color"": ""red"", ""number"": 10}",,
+"color == ""red"" && number == 10","{""$and"": [{""color"": ""red""}, {""number"": 10}]}",,
 "color == ""red"" || name == ""Name"" || number == 10","{""$or"": [{""color"": ""red""}, {""name"": ""Name""}, {""number"": 10}]}",,
-"color == ""red"" && name == ""Name"" && number == 10","{""color"": ""red"", ""name"": ""Name"", ""number"": 10}",,
-"color == ""red"" || name == ""Name"" && number == 10","{""$or"": [{""color"": ""red""}, {""name"": ""Name"", ""number"": 10}]}",,
-"color == ""red"" && name == ""Name"" || number == 10","{""$or"": [{""color"": ""red"", ""name"": ""Name""}, {""number"": 10}]}",,
-"someArray[?@.color == ""red"" && @.number == 10]","{""someArray"": {""$elemMatch"": {""color"": ""red"", ""number"": 10}}}",,
+"color == ""red"" && name == ""Name"" && number == 10","{""$and"": [{""color"": ""red""}, {""name"": ""Name""}, {""number"": 10}]}",,
+"color == ""red"" || name == ""Name"" && number == 10","{""$or"": [{""color"": ""red""}, {""$and"": [{""name"": ""Name""}, {""number"": 10}]}]}",,
+"color == ""red"" && name == ""Name"" || number == 10","{""$or"": [{""$and"": [{""color"": ""red""}, {""name"": ""Name""}]}, {""number"": 10}]}",,
+"someArray[?@.color == ""red"" && @.number == 10]","{""someArray"": {""$elemMatch"": {""$and"": [{""color"": ""red""}, {""number"": 10}]}}}",,
 "someArray[?@.color == ""red"" || @.number == 10]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""number"": 10}]}}}",,
-"someArray[?@.color == ""red"" || @.number == 10 && @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""number"": 10, ""name"": ""Name""}]}}}",,
-"someArray[?@.color == ""red"" && @.number == 10 || @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red"", ""number"": 10}, {""name"": ""Name""}]}}}",,
+"someArray[?@.color == ""red"" || @.number == 10 && @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""$and"": [{""number"": 10}, {""name"": ""Name""}]}]}}}",,
+"someArray[?@.color == ""red"" && @.number == 10 || @.name == ""Name""]","{""someArray"": {""$elemMatch"": {""$or"": [{""$and"": [{""color"": ""red""}, {""number"": 10}]}, {""name"": ""Name""}]}}}",,
 "someArray[?@.color == ""red"" || @.color == ""blue""]","{""someArray"": {""$elemMatch"": {""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}}}",,
+"color == ""red"" || (name == ""Name"" || number == 10)","{""$or"": [{""color"": ""red""}, {""$or"": [{""name"": ""Name""}, {""number"": 10}]}]}",,
+"(color == ""red"" || name == ""Name"") && number == 10","{""$and"": [{""$or"": [{""color"": ""red""}, {""name"": ""Name""}]}, {""number"": 10}]}",,
+"(@.color == ""red"" && @.name == ""Name"") && @.number == 10","{""$and"": [{""$and"": [{""color"": ""red""}, {""name"": ""Name""}]}, {""number"": 10}]}"
+"@.color == ""red"" && (@.name == ""Name"" && @.number == 10)","{""$and"": [{""color"": ""red""}, {""$and"": [{""name"": ""Name""}, {""number"": 10}]}]}"
+"@.color == ""red"" && (@.name == ""Name"" || @.number == 10)","{""$and"": [{""color"": ""red""}, {""$or"": [{""name"": ""Name""}, {""number"": 10}]}]}"
+"(@.color == ""red"" && @.name == ""Name"") || @.number == 10","{""$or"": [{""$and"": [{""color"": ""red""}, {""name"": ""Name""}]}, {""number"": 10}]}"
+"(color == ""red"" || name == ""John"") && (color == ""blue"" || name == ""Jane"")", "{""$and"": [{""$or"": [{""color"": ""red""}, {""name"": ""John""}]}, {""$or"": [{""color"": ""blue""}, {""name"": ""Jane""}]}]}"

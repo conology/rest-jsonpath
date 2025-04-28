@@ -1,11 +1,12 @@
 package net.conology.spring.restjsonpath.mongo.ir;
 
-import org.springframework.data.mongodb.core.query.Criteria;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.springframework.data.mongodb.core.query.Criteria;
 
-public final class MongoAllOfSelector implements MongoSelector {
+public final class MongoAllOfSelector
+    implements MongoAlternativesSelector, MongoSelector {
 
     private final List<MongoAlternativesSelector> tests;
 
@@ -17,18 +18,42 @@ public final class MongoAllOfSelector implements MongoSelector {
         return tests;
     }
 
-    public void apply(Criteria parentCritera) {
-        var criteriaByPath = new HashMap<String, Criteria>();
+    public void apply(Criteria parentCriteria) {
+        if (tests.size() > 1) {
+            applyMultipleTests(parentCriteria);
+        } else {
+            applySingleTest(tests.getFirst(), parentCriteria);
+        }
+    }
+
+    private void applyMultipleTests(Criteria parentCriteria) {
+        var criterias = new ArrayList<Criteria>();
         for (var test : tests) {
-            switch (test) {
-                case MongoPropertyCondition propertyCondition -> {
-                    var path = propertyCondition.getPropertySelector().getPathString();
-                    var criteria = criteriaByPath.computeIfAbsent(
-                            path,
-                            parentCritera::and);
-                    propertyCondition.getAssertion().apply(criteria);
-                }
-                case MongoAnyOfSelector anyOfSelector -> anyOfSelector.apply(parentCritera);
+            var criteria = new Criteria();
+            criterias.add(criteria);
+            applySingleTest(test, criteria);
+        }
+
+        parentCriteria.andOperator(criterias);
+    }
+
+    private void applySingleTest(
+        MongoAlternativesSelector test,
+        Criteria parentCriteria
+    ) {
+        switch (test) {
+            case MongoPropertyCondition propertyCondition -> {
+                var path = propertyCondition
+                    .getPropertySelector()
+                    .getPathString();
+                var criteria = parentCriteria.and(path);
+                propertyCondition.getAssertion().apply(criteria);
+            }
+            case MongoAnyOfSelector anyOfSelector -> {
+                anyOfSelector.apply(parentCriteria);
+            }
+            case MongoAllOfSelector allOfSelector -> {
+                allOfSelector.apply(parentCriteria);
             }
         }
     }
