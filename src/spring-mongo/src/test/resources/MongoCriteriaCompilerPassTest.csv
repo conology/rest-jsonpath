@@ -85,6 +85,6 @@ test[invalid,!invalidQuery,,,
 "@.color == ""red"" && (@.name == ""Name"" && @.number == 10)","{""$and"": [{""color"": ""red""}, {""$and"": [{""name"": ""Name""}, {""number"": 10}]}]}",,,
 "@.color == ""red"" && (@.name == ""Name"" || @.number == 10)","{""$and"": [{""color"": ""red""}, {""$or"": [{""name"": ""Name""}, {""number"": 10}]}]}",,,
 "(@.color == ""red"" && @.name == ""Name"") || @.number == 10","{""$or"": [{""$and"": [{""color"": ""red""}, {""name"": ""Name""}]}, {""number"": 10}]}",,,
-"(color == ""red"" || name == ""John"") && (color == ""blue"" || name == ""Jane"")","{""$and"": [{""$or"": [{""color"": ""red""}, {""name"": ""John""}]}, {""$or"": [{""color"": ""blue""}, {""name"": ""Jane""}]}]}"," {""""name"""": """"John""""}]}"," {""""$or"""": [{""""color"""": """"blue""""}"," {""""name"""": """"Jane""""}]}]}"""
+"(color == ""red"" || name == ""John"") && (color == ""blue"" || name == ""Jane"")","{""$and"": [{""$or"": [{""color"": ""red""}, {""name"": ""John""}]}, {""$or"": [{""color"": ""blue""}, {""name"": ""Jane""}]}]}",,,
 "(color == ""red"" && name == ""John"") || (color == ""blue"" && name == ""Jane"")","{""$or"": [{""$and"": [{""color"": ""red""}, {""name"": ""John""}]}, {""$and"": [{""color"": ""blue""}, {""name"": ""Jane""}]}]}",,,
 "color == ""red"" && name == ""John"" || color == ""blue"" && name == ""Jane""","{""$or"": [{""$and"": [{""color"": ""red""}, {""name"": ""John""}]}, {""$and"": [{""color"": ""blue""}, {""name"": ""Jane""}]}]}",,,
