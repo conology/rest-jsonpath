@@ -29,8 +29,8 @@ bracketedExpression: '[' (QUOTED_TEXT|filterSelector|WILDCARD_SELECTOR|INT) ']';
 filterSelector: '?' orExpression;
 orExpression: andExpression ('||' andExpression)*; 
 andExpression: logicalExpression ( '&&' logicalExpression)*;
-logicalExpression: paranthesesExpression | comparisonExpression | existenceExpression;
-paranthesesExpression: '(' orExpression ')';
+logicalExpression: parenthesesExpression | comparisonExpression | existenceExpression;
+parenthesesExpression: '(' orExpression ')';
 existenceExpression: relativeQuery;
 comparisonExpression:
     relativeQuery comparisonOperator literal

@@ -425,8 +425,8 @@ public class JsonPathCompilerPass {
     private PropertyFilterNode transformLogicalExpression(JsonPathMongoParser.LogicalExpressionContext logicalExpression) {
         guardParserException(logicalExpression);
 
-        if (logicalExpression.paranthesesExpression() != null) {
-            return transform(logicalExpression.paranthesesExpression());
+        if (logicalExpression.parenthesesExpression() != null) {
+            return transform(logicalExpression.parenthesesExpression());
         }
 
         if (logicalExpression.comparisonExpression() != null) {
@@ -444,7 +444,7 @@ public class JsonPathCompilerPass {
         throw failParserLexerMismatch();
     }
 
-    private PropertyFilterNode transform(JsonPathMongoParser.ParanthesesExpressionContext ctx) {
+    private PropertyFilterNode transform(JsonPathMongoParser.ParenthesesExpressionContext ctx) {
         guardParserException(ctx);
 
         if (ctx.orExpression() != null) {
