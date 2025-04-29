@@ -8,7 +8,8 @@ restQueries: restQuery (',' restQuery)* EOF;
 restQuery: restOrQuery;
 restOrQuery: restAndQuery ( '||' restAndQuery)*;
 restAndQuery: restBasicQuery ( '&&' restBasicQuery)*;
-restBasicQuery: restExistenceQuery | restComparisonQuery;
+restBasicQuery: restParenthesesQuery | restExistenceQuery | restComparisonQuery;
+restParenthesesQuery: '(' restOrQuery ')'; 
 restExistenceQuery: restRelativeQuery;
 restComparisonQuery:
     restRelativeQuery comparisonOperator literal
@@ -28,7 +29,8 @@ bracketedExpression: '[' (QUOTED_TEXT|filterSelector|WILDCARD_SELECTOR|INT) ']';
 filterSelector: '?' orExpression;
 orExpression: andExpression ('||' andExpression)*; 
 andExpression: logicalExpression ( '&&' logicalExpression)*;
-logicalExpression: comparisonExpression | existenceExpression;
+logicalExpression: parenthesesExpression | comparisonExpression | existenceExpression;
+parenthesesExpression: '(' orExpression ')';
 existenceExpression: relativeQuery;
 comparisonExpression:
     relativeQuery comparisonOperator literal

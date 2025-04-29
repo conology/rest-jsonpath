@@ -27,7 +27,11 @@ class MongoCriteriaCompilerPassTest {
 
         var errorExpectation = ERROR_EXPECTATION_PATTERN.matcher(expectation);
         if (errorExpectation.matches()) {
-            testException(input, errorExpectation.group(1), errorExpectation.group(2));
+            testException(
+                input,
+                errorExpectation.group(1),
+                errorExpectation.group(2)
+            );
         } else {
             testTranslatablePath(input, expectation);
         }
@@ -56,7 +60,9 @@ class MongoCriteriaCompilerPassTest {
         ){
             compilationError.isInstanceOf(InvalidQueryException.class);
         } else {
-            throw new TestInstantiationException("error test of type %s not defined".formatted(errorType));
+            throw new TestInstantiationException(
+                "error test of type %s not defined".formatted(errorType)
+            );
         }
 
         if (errorMsg != null) {

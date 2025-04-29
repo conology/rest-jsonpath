@@ -1,9 +1,9 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import java.util.List;
-
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
+
+import java.util.List;
 
 public class MongoIrCompilerPass {
 
@@ -11,8 +11,9 @@ public class MongoIrCompilerPass {
     private final MongoValueAssertion existenceAssertion;
 
     public MongoIrCompilerPass(
-            PropertyFilterNode ir,
-            MongoValueAssertion existenceAssertion) {
+        PropertyFilterNode ir,
+        MongoValueAssertion existenceAssertion
+    ) {
         this.ir = ir;
         this.existenceAssertion = existenceAssertion;
     }
@@ -32,23 +33,28 @@ public class MongoIrCompilerPass {
 
     private MongoAllOfSelector compileAllOfTest(AndFilterNode andNode) {
         return new MongoAllOfSelector(
-                andNode.getNodes().stream()
-                        .map(node -> {
-                            return switch (node) {
-                                case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
-                                case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
-                                case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
-                                case OrFilterNode orFilterNode -> compileAnyOfTest(orFilterNode);
-                                case AndFilterNode andFilterNode ->
-                                    new MongoAnyOfSelector(List.of(compileAllOfTest(andFilterNode)));
-                            };
-                        })
-                        .toList());
+            andNode
+                .getNodes()
+                .stream()
+                .map(node -> {
+                    return switch (node) {
+                        case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
+                        case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
+                        case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
+                        case OrFilterNode orFilterNode -> compileAnyOfTest(orFilterNode);
+                        case AndFilterNode andFilterNode -> compileAllOfTest(andFilterNode);
+                    };
+                })
+                .toList()
+        );
     }
 
     private MongoAnyOfSelector compileAnyOfTest(OrFilterNode orNode) {
         return new MongoAnyOfSelector(
-                orNode.getNodes().stream().map(node -> {
+            orNode
+                .getNodes()
+                .stream()
+                .map(node -> {
                     return switch (node) {
                         case RelativeValueComparingNode comparingFilter ->
                             new MongoAllOfSelector(List.of(compilePropertyTest(comparingFilter)));
@@ -58,17 +64,21 @@ public class MongoIrCompilerPass {
                             new MongoAllOfSelector(List.of(compilePropertyTest(regexFilterNode)));
                         case OrFilterNode orFilterNode ->
                             new MongoAllOfSelector(List.of(compileAnyOfTest(orFilterNode)));
-                        case AndFilterNode ignored -> compileAllOfTest(ignored);
+                        case AndFilterNode ignored ->
+                            compileAllOfTest(ignored);
                     };
-                }).toList());
+                })
+                .toList()
+        );
     }
 
-    public MongoAlternativesSelector compilePropertyTest(PropertyFilterNode filterNode) {
+    public MongoAlternativesSelector compilePropertyTest(
+        PropertyFilterNode filterNode
+    ) {
         return switch (filterNode) {
             case RelativeValueComparingNode comparingFilter -> compilePropertyTest(comparingFilter);
             case ExistenceFilterNode existenceFilter -> compilePropertyTest(existenceFilter);
             case RegexFilterNode regexFilterNode -> compilePropertyTest(regexFilterNode);
-
             case OrFilterNode ignored ->
                 throw new RuntimeException("OrFilterNode not expected here. This should never happen.");
             case AndFilterNode ignored ->
@@ -76,28 +86,38 @@ public class MongoIrCompilerPass {
         };
     }
 
-    private MongoAlternativesSelector compilePropertyTest(RegexFilterNode node) {
+    private MongoAlternativesSelector compilePropertyTest(
+        RegexFilterNode node
+    ) {
         var assertion = new RegexMongoValueAssertion(node);
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoAlternativesSelector compilePropertyTest(ExistenceFilterNode node) {
+    private MongoAlternativesSelector compilePropertyTest(
+        ExistenceFilterNode node
+    ) {
         return compilePropertyTest(node.getRelativeQueryNode(), null);
     }
 
-    private MongoAlternativesSelector compilePropertyTest(RelativeValueComparingNode node) {
+    private MongoAlternativesSelector compilePropertyTest(
+        RelativeValueComparingNode node
+    ) {
         var assertion = new MongoValueComparingAssertion(
-                node.getOperator(),
-                node.getValueNode().getValue());
+            node.getOperator(),
+            node.getValueNode().getValue()
+        );
         return compilePropertyTest(node.getRelativeQueryNode(), assertion);
     }
 
-    private MongoAlternativesSelector compilePropertyTest(RelativeQueryNode queryNode,
-            MongoPropertyAssertion assertion) {
+    private MongoAlternativesSelector compilePropertyTest(
+        RelativeQueryNode queryNode,
+        MongoPropertyAssertion assertion
+    ) {
         return new NestedValueTestCompiler(
-                queryNode,
-                this,
-                assertion).compile();
+            queryNode,
+            this,
+            assertion
+        ).compile();
     }
 
     public MongoValueAssertion getExistenceAssertion() {
@@ -105,16 +125,21 @@ public class MongoIrCompilerPass {
     }
 
     public static class Builder {
+
         private MongoValueAssertion existenceAssertion;
 
         public MongoIrCompilerPass build(PropertyFilterNode ir) {
             return new MongoIrCompilerPass(
-                    ir,
-                    existenceAssertion != null ? existenceAssertion
-                            : MongoDelegatingValueAssertion.createDefaultExistenceAssertion());
+                ir,
+                existenceAssertion != null
+                    ? existenceAssertion
+                    : MongoDelegatingValueAssertion.createDefaultExistenceAssertion()
+            );
         }
 
-        public Builder existenceAssertion(MongoValueAssertion existenceAssertion) {
+        public Builder existenceAssertion(
+            MongoValueAssertion existenceAssertion
+        ) {
             this.existenceAssertion = existenceAssertion;
             return this;
         }

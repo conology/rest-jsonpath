@@ -23,7 +23,9 @@ public class NestedValueTestCompiler {
     }
 
     public MongoPropertyCondition compile() {
-        var nodes = PeekingIterator.of(relativeQueryNode.getSelectorNodes().iterator());
+        var nodes = PeekingIterator.of(
+            relativeQueryNode.getSelectorNodes().iterator()
+        );
 
         MongoPropertyCondition head = null;
         MongoElementMatch tail = null;
@@ -62,27 +64,32 @@ public class NestedValueTestCompiler {
         );
     }
 
-    private MongoFieldSelector compileSelector(PeekingIterator<SelectorNode> nodes) {
+    private MongoFieldSelector compileSelector(
+        PeekingIterator<SelectorNode> nodes
+    ) {
         var path = new ArrayList<String>();
 
         while (nodes.hasNext()) {
             var next = nodes.peek();
-            var handled = switch (next) {
-                case SelectorNode.Constant.WILDCARD -> true;
-                case IndexSelectorNode indexSelectorNode -> {
-                    path.add(Integer.toString(indexSelectorNode.getIndex()));
-                    yield true;
-                }
-                case UnsafeFieldSelector it -> {
-                    path.add(it.getFieldName());
-                    yield true;
-                }
-                case FieldSelectorNode fieldSelectorNode -> {
-                    path.addAll(fieldSelectorNode.getPath());
-                    yield true;
-                }
-                case PropertyFilterNode ignored -> false;
-            };
+            var handled =
+                switch (next) {
+                    case SelectorNode.Constant.WILDCARD -> true;
+                    case IndexSelectorNode indexSelectorNode -> {
+                        path.add(
+                            Integer.toString(indexSelectorNode.getIndex())
+                        );
+                        yield true;
+                    }
+                    case UnsafeFieldSelector it -> {
+                        path.add(it.getFieldName());
+                        yield true;
+                    }
+                    case FieldSelectorNode fieldSelectorNode -> {
+                        path.addAll(fieldSelectorNode.getPath());
+                        yield true;
+                    }
+                    case PropertyFilterNode ignored -> false;
+                };
             if (handled) {
                 nodes.next();
             } else {
@@ -94,7 +101,8 @@ public class NestedValueTestCompiler {
     }
 
     private MongoElementMatch compileElementMatch(
-            PeekingIterator<SelectorNode> nodes) {
+        PeekingIterator<SelectorNode> nodes
+    ) {
         var alternativesSelectors = new ArrayList<MongoAlternativesSelector>();
         while (nodes.hasNext()) {
             var next = nodes.peek();
@@ -102,15 +110,24 @@ public class NestedValueTestCompiler {
                 nodes.next();
                 var testNode = parent.compileTestNode(filterNode);
                 switch (testNode) {
-                    case MongoAllOfSelector allOf -> alternativesSelectors.addAll(allOf.getTests());
-                    case MongoAnyOfSelector anyOf -> alternativesSelectors.add(anyOf);
-                    case MongoPropertyCondition propertyTest -> alternativesSelectors.add(propertyTest);
+                    case MongoAllOfSelector allOf -> alternativesSelectors.addAll(
+                        allOf.getTests()
+                    );
+                    case MongoAnyOfSelector anyOf -> alternativesSelectors.add(
+                        anyOf
+                    );
+                    case MongoPropertyCondition propertyTest -> alternativesSelectors.add(
+                        propertyTest
+                    );
                 }
             } else {
                 break;
             }
         }
-        return alternativesSelectors.isEmpty() ? null
-                : new MongoElementMatch(new MongoAllOfSelector(alternativesSelectors));
+        return alternativesSelectors.isEmpty()
+            ? null
+            : new MongoElementMatch(
+                new MongoAllOfSelector(alternativesSelectors)
+            );
     }
 }
