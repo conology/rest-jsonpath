@@ -1,9 +1,10 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import java.util.ArrayList;
 import net.conology.restjsonpath.PeekingIterator;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
+
+import java.util.ArrayList;
 
 public class NestedValueTestCompiler {
 

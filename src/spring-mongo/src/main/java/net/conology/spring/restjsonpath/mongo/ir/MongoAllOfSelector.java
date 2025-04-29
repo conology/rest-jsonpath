@@ -1,9 +1,9 @@
 package net.conology.spring.restjsonpath.mongo.ir;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import org.springframework.data.mongodb.core.query.Criteria;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MongoAllOfSelector
     implements MongoAlternativesSelector, MongoSelector {

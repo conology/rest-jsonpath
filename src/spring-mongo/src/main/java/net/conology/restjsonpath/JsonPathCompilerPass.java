@@ -1,16 +1,17 @@
 package net.conology.restjsonpath;
 
+import net.conology.restjsonpath.ast.*;
+import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import net.conology.restjsonpath.ast.*;
-import net.conology.restjsonpath.core.parser.JsonPathMongoParser;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.text.StringEscapeUtils;
 
 public class JsonPathCompilerPass {
 
@@ -36,11 +37,10 @@ public class JsonPathCompilerPass {
             throw failParserLexerMismatch();
         }
 
-        var expressions = ctx
-            .restAndQuery()
-            .stream()
-            .map(this::transform)
-            .toList();
+        var expressions = ctx.restAndQuery()
+                .stream()
+                .map(this::transform)
+                .toList();
 
         return expressions.size() == 1
             ? expressions.getFirst()
@@ -54,11 +54,10 @@ public class JsonPathCompilerPass {
             throw failParserLexerMismatch();
         }
 
-        var expressions = ctx
-            .restBasicQuery()
-            .stream()
-            .map(this::transform)
-            .toList();
+        var expressions = ctx.restBasicQuery()
+                .stream()
+                .map(this::transform)
+                .toList();
 
         return expressions.size() == 1
             ? expressions.getFirst()
@@ -137,10 +136,7 @@ public class JsonPathCompilerPass {
         PeekingIterator<JsonPathMongoParser.SegmentContext> segments
     ) {
         if (ctx.memberNameShortHand() != null) {
-            return transformPropertySelector(
-                ctx.memberNameShortHand(),
-                segments
-            );
+            return transformPropertySelector(ctx.memberNameShortHand(), segments);
         }
 
         if (ctx.bracketedExpression() != null) {
@@ -253,11 +249,7 @@ public class JsonPathCompilerPass {
         }
 
         if (ctx.literal() != null && ctx.comparisonOperator() != null) {
-            return transformComparison(
-                leftNode,
-                ctx.literal(),
-                ctx.comparisonOperator()
-            );
+            return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
         }
 
         throw failParserLexerMismatch();
@@ -276,11 +268,7 @@ public class JsonPathCompilerPass {
         }
 
         if (ctx.literal() != null && ctx.comparisonOperator() != null) {
-            return transformComparison(
-                leftNode,
-                ctx.literal(),
-                ctx.comparisonOperator()
-            );
+            return transformComparison(leftNode, ctx.literal(), ctx.comparisonOperator());
         }
 
         throw failParserLexerMismatch();
@@ -293,8 +281,7 @@ public class JsonPathCompilerPass {
     ) {
         var valueNode = transformLiteral(literal);
 
-        var operator =
-            switch (operatorCtx.getText()) {
+        var operator = switch (operatorCtx.getText()) {
                 case "==" -> ComparisonOperator.EQ;
                 case "!=" -> ComparisonOperator.NEQ;
                 case ">" -> ComparisonOperator.GT;
@@ -304,16 +291,10 @@ public class JsonPathCompilerPass {
                 default -> throw new AssertionError();
             };
 
-        return new RelativeValueComparingNode(
-            propertyQuery,
-            valueNode,
-            operator
-        );
+        return new RelativeValueComparingNode(propertyQuery, valueNode, operator);
     }
 
-    private static final Pattern REGEX_PATTERN = Pattern.compile(
-        "^/(.*)/([a-z]*)$"
-    );
+    private static final Pattern REGEX_PATTERN = Pattern.compile("^/(.*)/([a-z]*)$");
 
     private RegexFilterNode transformRegexComparison(
         RelativeQueryNode queryNode,
@@ -337,8 +318,7 @@ public class JsonPathCompilerPass {
         TerminalNode operator,
         TerminalNode regex
     ) {
-        var isNegated =
-            switch (operator.getText()) {
+        var isNegated = switch (operator.getText()) {
                 case "=~" -> false;
                 case "!~" -> true;
                 case null, default -> throw failParserLexerMismatch();
@@ -350,11 +330,10 @@ public class JsonPathCompilerPass {
             throw failParserLexerMismatch();
         }
         var pattern = matcher.group(1);
-        var options = matcher
-            .group(2)
-            .chars()
-            .mapToObj(c -> (char) c)
-            .collect(Collectors.toSet());
+        var options = matcher.group(2)
+                .chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toSet());
         return new RegexFilterNode(queryNode, pattern, options, isNegated);
     }
 
@@ -393,11 +372,10 @@ public class JsonPathCompilerPass {
             throw failParserLexerMismatch();
         }
 
-        var expressions = ctx
-            .andExpression()
-            .stream()
-            .map(this::transform)
-            .toList();
+        var expressions = ctx.andExpression()
+                .stream()
+                .map(this::transform)
+                .toList();
 
         return expressions.size() == 1
             ? expressions.getFirst()
@@ -411,11 +389,10 @@ public class JsonPathCompilerPass {
             throw failParserLexerMismatch();
         }
 
-        var expressions = ctx
-            .logicalExpression()
-            .stream()
-            .map(this::transformLogicalExpression)
-            .toList();
+        var expressions = ctx.logicalExpression()
+                .stream()
+                .map(this::transformLogicalExpression)
+                .toList();
 
         return expressions.size() == 1
             ? expressions.getFirst()
@@ -483,9 +460,8 @@ public class JsonPathCompilerPass {
         }
 
         if (literal.QUOTED_TEXT() != null) {
-            return new ValueNode(
-                processQuotedText(literal.QUOTED_TEXT().getText())
-            );
+            var stringValue = processQuotedText(literal.QUOTED_TEXT().getText());
+            return new ValueNode(stringValue);
         }
 
         if (literal.FALSE() != null) {

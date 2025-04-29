@@ -1,9 +1,5 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.regex.Pattern;
 import net.conology.restjsonpath.InvalidQueryException;
 import net.conology.spring.restjsonpath.mongo.postprocessor.SimpleDateTimePropertyMapper;
 import net.conology.spring.restjsonpath.mongo.postprocessor.SimpleFieldNameMapper;
@@ -13,17 +9,17 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import org.opentest4j.TestAbortedException;
 import org.springframework.data.mongodb.core.query.Criteria;
 
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class MongoCriteriaCompilerPassTest {
 
-    private static final Pattern ERROR_EXPECTATION_PATTERN = Pattern.compile(
-        "^!([A-z]+)(?::(.*))?$"
-    );
+    private static final Pattern ERROR_EXPECTATION_PATTERN = Pattern.compile("^!([A-z]+)(?::(.*))?$");
 
     @ParameterizedTest(name = "[{index}] {0}")
-    @CsvFileSource(
-        resources = "/MongoCriteriaCompilerPassTest.csv",
-        numLinesToSkip = 1
-    )
+    @CsvFileSource(resources = "/MongoCriteriaCompilerPassTest.csv", numLinesToSkip = 1)
     void test(String input, String expectation) {
         if (expectation == null) {
             throw new TestAbortedException("behavior not yet defined");
@@ -41,11 +37,7 @@ class MongoCriteriaCompilerPassTest {
         }
     }
 
-    private void testException(
-        String input,
-        String errorType,
-        String errorMsg
-    ) {
+    private void testException(String input, String errorType, String errorMsg) {
         if ("lowPriority".equals(errorType)) {
             // we don't care if it works or not
             // no guarantees given

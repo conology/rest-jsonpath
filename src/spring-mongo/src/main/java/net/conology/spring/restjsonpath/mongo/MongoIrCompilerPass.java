@@ -1,8 +1,9 @@
 package net.conology.spring.restjsonpath.mongo;
 
-import java.util.List;
 import net.conology.restjsonpath.ast.*;
 import net.conology.spring.restjsonpath.mongo.ir.*;
+
+import java.util.List;
 
 public class MongoIrCompilerPass {
 
