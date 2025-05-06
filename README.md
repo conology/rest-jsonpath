@@ -104,6 +104,10 @@ var compiler = new JsonPathCriteriaCompilerBuilder()
 Check out the implementation of the provided post processors for inspiration
 on more complex use cases.
 
+### See also
+- [Concept jsonpath rest filter query](./docs/1-jsonpath-filter-query.md)
+- [Compiler architecture](./docs/2-compiler-architecture.md)
+
 ### Limitations
 - No nested or-Support
 - And support only for and-ing multiple field criteria
