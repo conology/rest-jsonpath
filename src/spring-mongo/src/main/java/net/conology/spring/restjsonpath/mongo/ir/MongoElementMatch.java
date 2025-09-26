@@ -10,6 +10,10 @@ public final class MongoElementMatch implements MongoPropertyAssertion {
         this.propertyTests = propertyTests;
     }
 
+    public MongoAllOfSelector getTests() {
+        return propertyTests;
+    }
+
     public void addTest(MongoPropertyCondition test) {
         propertyTests.addTest(test);
     }

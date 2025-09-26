@@ -1,10 +1,7 @@
 package net.conology.spring.restjsonpath.mongo.postprocessor;
 
 import net.conology.restjsonpath.PostProcessor;
-import net.conology.spring.restjsonpath.mongo.ir.MongoAllOfSelector;
-import net.conology.spring.restjsonpath.mongo.ir.MongoAnyOfSelector;
-import net.conology.spring.restjsonpath.mongo.ir.MongoPropertyCondition;
-import net.conology.spring.restjsonpath.mongo.ir.MongoSelector;
+import net.conology.spring.restjsonpath.mongo.ir.*;
 
 public abstract class AbstractMongoTestPostProcessor implements PostProcessor<MongoSelector> {
 
@@ -14,8 +11,13 @@ public abstract class AbstractMongoTestPostProcessor implements PostProcessor<Mo
             case MongoAllOfSelector allOfNode ->
                 allOfNode.getTests().forEach(this::accept);
             case MongoAnyOfSelector anyOfNode ->
-                anyOfNode.getAllOfSelectors().forEach(selector -> selector.getTests().forEach(this::accept));
-            case MongoPropertyCondition testNode -> accept(testNode);
+                anyOfNode.getAllOfSelectors().forEach(this::accept);
+            case MongoPropertyCondition testNode -> {
+                accept(testNode);
+                if(testNode.getAssertion() instanceof MongoElementMatch elemMatch) {
+                    accept(elemMatch.getTests());
+                }
+            }
         }
     }
 
