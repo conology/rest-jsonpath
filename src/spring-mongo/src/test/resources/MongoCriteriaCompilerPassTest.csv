@@ -65,7 +65,7 @@ test[invalid,!invalidQuery,,
 "@.store.title == ""Amazing""","{""store.title"": ""Amazing""}",,
 [?@.title],!invalidQuery:root query must always start with a property selection,,
 [0],"{""0"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}",,
-"books[?@[""@type""]]","{""books"": {""$elemMatch"": {""@type"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
+"books[?@[""@type""]]","{""books"": {""$elemMatch"": {""atType"": {""$exists"": true, ""$ne"": null, ""$not"": {""$size"": 0}}}}}",,
 "books[?@.title == ""chuck"" || @.title == ""norris""]","{""books"": {""$elemMatch"": {""$or"": [{""title"": ""chuck""}, {""title"": ""norris""}]}}}",,support for nested or expressions not planned atm.
 "color == ""red"" || number == 10","{""$or"": [{""color"": ""red""}, {""number"": 10}]}",,
 "color == ""red"" || color == ""blue""","{""$or"": [{""color"": ""red""}, {""color"": ""blue""}]}",,
