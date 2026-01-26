@@ -41,7 +41,7 @@ testing {
                 implementation(platform("org.junit:junit-bom:5.10.0"))
                 implementation(project())
                 implementation("org.junit.jupiter:junit-jupiter")
-                implementation("org.assertj:assertj-core:3.27.2")
+                implementation("org.assertj:assertj-core:3.27.7")
             }
         }
 
