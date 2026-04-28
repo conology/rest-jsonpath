@@ -1,0 +1,16 @@
+name: Dependency Track Submission
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dependency-submission:
+    uses: conology/wholex-devops/.github/workflows/dependency-track.yml@main
+    with:
+      project-name: ${{ github.repository }}
+      project-version: ${{ github.ref_name }}
+      parent: 7fa5716d-ef4b-4739-9744-ddee01113cb5
+    secrets:
+      DEPENDENCYTRACK_APIKEY: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
