@@ -6,11 +6,27 @@ on:
       - main
 
 jobs:
-  dependency-submission:
-    uses: conology/wholex-devops/.github/workflows/dependency-track.yml@main
-    with:
-      project-name: ${{ github.repository }}
-      project-version: ${{ github.ref_name }}
-      parent: 7fa5716d-ef4b-4739-9744-ddee01113cb5
-    secrets:
-      DEPENDENCYTRACK_APIKEY: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+  trivy-sbom-and-dependencytrack-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Create sbom with Trivy
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: cyclonedx
+          output: sbom.cdx.json
+      - name: Upload sbom to Dependency-Track
+        uses: DependencyTrack/gh-upload-sbom@v3
+        with:
+          serverHostname: ${{ secrets.DEPENDENCYTRACK_HOSTNAME }}
+          apiKey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+          projectName: ${{ github.repository }}
+          projectVersion: ${{ github.ref_name }}
+          bomFilename: "sbom.cdx.json"
+          parent: ${{ secrets.DEPENDENCYTRACK_PARENT_UUID }}
+          autoCreate: true
