@@ -4,7 +4,7 @@ on:
   workflow_call:
   push:
     branches:
-      - chore/pln-1878/integrate-dependency-track-adjustments
+      - chore/pln-1878/integrate-dependency-track-adjustment
 
 jobs:
   dependency-track:
