@@ -1,10 +1,9 @@
 name: Dependency Track Submission
 
 on:
-  workflow_call:
   push:
     branches:
-      - chore/pln-1878/integrate-dependency-track-adjustment
+      - main
 
 jobs:
   trivy-sbom-and-dependencytrack-upload:
