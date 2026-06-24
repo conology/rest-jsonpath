@@ -28,7 +28,6 @@ jobs:
           args: >-
             -Dsonar.projectKey=${{ github.event.repository.name }}
             -Dsonar.sources=src/main
-            -Dsonar.tests=src/test
             -Dsonar.java.binaries=build/classes
             -Dsonar.verbose=true
         env:
