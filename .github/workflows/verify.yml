@@ -27,8 +27,8 @@ jobs:
           skipSignatureVerification: true
           args: >-
             -Dsonar.projectKey=${{ github.event.repository.name }}
-            -Dsonar.sources=spring-mongo
-            -Dsonar.java.binaries=spring-mongo/build/classes/java/main
+            -Dsonar.sources=.
+            -Dsonar.java.binaries=.
             -Dsonar.verbose=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
